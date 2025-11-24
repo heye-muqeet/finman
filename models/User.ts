@@ -116,7 +116,6 @@ const UserSchema = new Schema(
       unique: true,
       lowercase: true,
       trim: true,
-      index: true,
       match: [/^\S+@\S+\.\S+$/, 'Please provide a valid email address'],
     },
     password: {
@@ -198,8 +197,7 @@ const UserSchema = new Schema(
   }
 );
 
-// Indexes
-UserSchema.index({ email: 1 }, { unique: true });
+// Indexes (email index is created automatically by unique: true)
 UserSchema.index({ 'oauthProviders.google.providerId': 1 });
 UserSchema.index({ 'oauthProviders.facebook.providerId': 1 });
 UserSchema.index({ createdAt: -1 });

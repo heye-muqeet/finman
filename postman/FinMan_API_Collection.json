@@ -1,0 +1,159 @@
+{
+	"info": {
+		"_postman_id": "finman-api-collection-v1",
+		"name": "FinMan - Financial Management System API",
+		"description": "Complete API collection for FinMan - Financial & Expense Management System\n\nThis collection includes all API endpoints organized by feature/chunk.\n\n**Base URL**: {{baseUrl}}\n**Environment**: {{environment}}\n\n**Authentication**: Most endpoints require JWT token in Authorization header:\n```\nAuthorization: Bearer {{accessToken}}\n```",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Test & Health",
+			"item": [
+				{
+					"name": "Database Connection Test",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/test/db",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"test",
+								"db"
+							]
+						},
+						"description": "Test endpoint to verify MongoDB database connection status.\n\n**Chunk**: 02 - Database Connection and Mongoose Setup\n\n**Response**: Returns connection state, database name, host, and port information."
+					},
+					"response": []
+				}
+			],
+			"description": "Endpoints for testing system health and database connectivity"
+		},
+		{
+			"name": "Authentication",
+			"item": [
+				{
+					"name": "Register User",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 201) {",
+									"    const response = pm.response.json();",
+									"    if (response.data && response.data.token) {",
+									"        pm.environment.set(\"accessToken\", response.data.token);",
+									"        pm.environment.set(\"refreshToken\", response.data.refreshToken || \"\");",
+									"        pm.environment.set(\"userId\", response.data.user._id);",
+									"    }",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"user@example.com\",\n  \"password\": \"SecurePass123!\",\n  \"firstName\": \"John\",\n  \"lastName\": \"Doe\",\n  \"currency\": \"USD\",\n  \"timezone\": \"UTC\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/auth/register",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"auth",
+								"register"
+							]
+						},
+						"description": "Register a new user account.\n\n**Chunk**: 05 - User Registration API Endpoint\n\n**Rate Limit**: 5 requests per 15 minutes\n\n**Password Requirements**:\n- Minimum 8 characters\n- At least one uppercase letter\n- At least one lowercase letter\n- At least one number\n- At least one special character\n\n**Response**: Returns user data and JWT tokens (accessToken, refreshToken)"
+					},
+					"response": []
+				},
+				{
+					"name": "Login User",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"user@example.com\",\n  \"password\": \"SecurePass123!\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/auth/login",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"auth",
+								"login"
+							]
+						},
+						"description": "Login with email and password.\n\n**Chunk**: 06 - User Login API Endpoint (To be implemented)\n\n**Rate Limit**: 5 requests per 15 minutes\n\n**Response**: Returns user data and JWT tokens"
+					},
+					"response": []
+				}
+			],
+			"description": "Authentication endpoints for user registration, login, and session management"
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "http://localhost:3000",
+			"type": "string"
+		}
+	]
+}
+
