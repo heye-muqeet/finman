@@ -4,3 +4,4 @@ alwaysApply: true
 My Entire Project Documentation Files, is in the Documentation Folder
 My Project Documentation File is Documentation/FINANCIAL_MANAGEMENT_SYSTEM_DOCUMENTATION.md
 and my development Plan is in Documentation/Development_Plan.md
+create a collection for the postman and always update it on any new end point or whever any chage required related to new updation to make sure its always been uptodate

@@ -126,6 +126,7 @@ const UserSchema = new Schema(
         return this.primaryAuthMethod === 'email';
       },
       minlength: [8, 'Password must be at least 8 characters long'],
+      select: false, // Don't return password by default (security)
     },
     firstName: {
       type: String,
@@ -154,6 +155,7 @@ const UserSchema = new Schema(
     twoFactorSecret: {
       type: String,
       required: false,
+      select: false, // Don't return 2FA secret by default (security)
     },
     twoFactorBackupCodes: {
       type: [String],
