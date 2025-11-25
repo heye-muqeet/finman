@@ -5,7 +5,7 @@
 
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Plus, Edit, Trash2, Filter } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -44,6 +44,11 @@ export default function CategoryList({
   selectedType = 'all',
 }: CategoryListProps) {
   const [localTypeFilter, setLocalTypeFilter] = useState<CategoryType | 'all'>(selectedType);
+
+  // Sync localTypeFilter with selectedType prop changes
+  useEffect(() => {
+    setLocalTypeFilter(selectedType);
+  }, [selectedType]);
 
   const handleTypeFilterChange = (value: string) => {
     const newFilter = value as CategoryType | 'all';
@@ -217,4 +222,3 @@ export default function CategoryList({
     </Card>
   );
 }
-
