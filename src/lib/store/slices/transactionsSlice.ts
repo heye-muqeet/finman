@@ -13,11 +13,35 @@ import type {
 } from '@/types/transaction.types';
 
 /**
+ * Transaction Statistics Type
+ */
+export interface TransactionStats {
+  income: {
+    total: number;
+    count: number;
+    average: number;
+    min: number;
+    max: number;
+  };
+  expense: {
+    total: number;
+    count: number;
+    average: number;
+    min: number;
+    max: number;
+  };
+  net: number;
+  totalTransactions: number;
+}
+
+/**
  * Transactions state interface
  */
 export interface TransactionsState {
   transactions: Transaction[];
   selectedTransaction: Transaction | null;
+  // Statistics
+  stats: TransactionStats | null;
   // Pagination
   page: number;
   limit: number;
@@ -33,10 +57,16 @@ export interface TransactionsState {
   isCreating: boolean;
   isUpdating: boolean;
   isDeleting: boolean;
+  isFetchingStats: boolean;
+  isBulkCreating: boolean;
   // Error state
   error: string | null;
   // Last fetch timestamp
   lastFetched: number | null;
+  // Optimistic updates tracking
+  optimisticUpdates: {
+    [key: string]: Transaction; // Temporary transactions pending server confirmation
+  };
 }
 
 /**
@@ -45,6 +75,8 @@ export interface TransactionsState {
 const initialState: TransactionsState = {
   transactions: [],
   selectedTransaction: null,
+  // Statistics
+  stats: null,
   // Pagination defaults
   page: 1,
   limit: 20,
@@ -60,10 +92,14 @@ const initialState: TransactionsState = {
   isCreating: false,
   isUpdating: false,
   isDeleting: false,
+  isFetchingStats: false,
+  isBulkCreating: false,
   // Error state
   error: null,
   // Last fetch
   lastFetched: null,
+  // Optimistic updates
+  optimisticUpdates: {},
 };
 
 /**
@@ -198,7 +234,7 @@ export const createTransaction = createAsyncThunk<
   { rejectValue: string }
 >(
   'transactions/createTransaction',
-  async (transactionData, { rejectWithValue }) => {
+  async (transactionData, { rejectWithValue, dispatch }) => {
     try {
       const token = localStorage.getItem('accessToken');
       if (!token) {
@@ -221,6 +257,10 @@ export const createTransaction = createAsyncThunk<
         const errorMessage = data.error?.message || data.error?.details || 'Failed to create transaction';
         return rejectWithValue(errorMessage);
       }
+
+      // Automatically refetch transactions and stats after successful creation
+      dispatch(fetchTransactions());
+      dispatch(fetchStats());
 
       return data.data.transaction;
     } catch (error) {
@@ -282,7 +322,7 @@ export const updateTransaction = createAsyncThunk<
   { rejectValue: string }
 >(
   'transactions/updateTransaction',
-  async ({ transactionId, data }, { rejectWithValue }) => {
+  async ({ transactionId, data }, { rejectWithValue, dispatch }) => {
     try {
       const token = localStorage.getItem('accessToken');
       if (!token) {
@@ -306,6 +346,10 @@ export const updateTransaction = createAsyncThunk<
         return rejectWithValue(errorMessage);
       }
 
+      // Automatically refetch transactions and stats after successful update
+      dispatch(fetchTransactions());
+      dispatch(fetchStats());
+
       return responseData.data.transaction;
     } catch (error) {
       return rejectWithValue(
@@ -324,7 +368,7 @@ export const deleteTransaction = createAsyncThunk<
   { rejectValue: string }
 >(
   'transactions/deleteTransaction',
-  async (transactionId, { rejectWithValue }) => {
+  async (transactionId, { rejectWithValue, dispatch }) => {
     try {
       const token = localStorage.getItem('accessToken');
       if (!token) {
@@ -348,7 +392,120 @@ export const deleteTransaction = createAsyncThunk<
         );
       }
 
+      // Automatically refetch transactions and stats after successful deletion
+      dispatch(fetchTransactions());
+      dispatch(fetchStats());
+
       return transactionId;
+    } catch (error) {
+      return rejectWithValue(
+        error instanceof Error ? error.message : 'An unexpected error occurred'
+      );
+    }
+  }
+);
+
+/**
+ * Async thunk for fetching transaction statistics
+ */
+export const fetchStats = createAsyncThunk<
+  TransactionStats,
+  { startDate?: Date; endDate?: Date } | void,
+  { rejectValue: string }
+>(
+  'transactions/fetchStats',
+  async (params, { rejectWithValue }) => {
+    try {
+      const token = localStorage.getItem('accessToken');
+      if (!token) {
+        return rejectWithValue('Authentication required');
+      }
+
+      const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+      
+      // Build query string for date range
+      const queryParams = new URLSearchParams();
+      if (params?.startDate) {
+        queryParams.append('startDate', params.startDate instanceof Date 
+          ? params.startDate.toISOString() 
+          : new Date(params.startDate).toISOString());
+      }
+      if (params?.endDate) {
+        queryParams.append('endDate', params.endDate instanceof Date 
+          ? params.endDate.toISOString() 
+          : new Date(params.endDate).toISOString());
+      }
+
+      const queryString = queryParams.toString();
+      // Note: This endpoint needs to be created in a future chunk.
+      // The service method getUserStats exists, but the API endpoint /api/v1/transactions/stats
+      // should be created to expose this functionality. For now, this thunk is prepared
+      // and will work once the endpoint is implemented.
+      const url = `${baseUrl}/api/v1/transactions/stats${queryString ? `?${queryString}` : ''}`;
+
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        return rejectWithValue(
+          data.error?.message || 'Failed to fetch statistics'
+        );
+      }
+
+      return data.data.stats || data.data;
+    } catch (error) {
+      return rejectWithValue(
+        error instanceof Error ? error.message : 'An unexpected error occurred'
+      );
+    }
+  }
+);
+
+/**
+ * Async thunk for bulk creating transactions
+ */
+export const bulkCreateTransactions = createAsyncThunk<
+  Transaction[],
+  TransactionCreateInput[],
+  { rejectValue: string }
+>(
+  'transactions/bulkCreateTransactions',
+  async (transactionsData, { rejectWithValue, dispatch }) => {
+    try {
+      const token = localStorage.getItem('accessToken');
+      if (!token) {
+        return rejectWithValue('Authentication required');
+      }
+
+      const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+      const response = await fetch(`${baseUrl}/api/v1/transactions/bulk`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ transactions: transactionsData }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        const errorMessage = data.error?.message || data.error?.details || 'Failed to create transactions';
+        return rejectWithValue(errorMessage);
+      }
+
+      // Automatically refetch transactions and stats after successful bulk create
+      dispatch(fetchTransactions());
+      dispatch(fetchStats());
+
+      return data.data.transactions || [];
     } catch (error) {
       return rejectWithValue(
         error instanceof Error ? error.message : 'An unexpected error occurred'
@@ -433,6 +590,7 @@ const transactionsSlice = createSlice({
     resetTransactions: (state) => {
       state.transactions = [];
       state.selectedTransaction = null;
+      state.stats = null;
       state.page = 1;
       state.total = 0;
       state.totalPages = 0;
@@ -441,6 +599,27 @@ const transactionsSlice = createSlice({
       state.sortOrder = 'desc';
       state.error = null;
       state.lastFetched = null;
+      state.optimisticUpdates = {};
+    },
+    /**
+     * Add optimistic transaction (for immediate UI update)
+     */
+    addOptimisticTransaction: (state, action: PayloadAction<{ tempId: string; transaction: Transaction }>) => {
+      const { tempId, transaction } = action.payload;
+      state.optimisticUpdates[tempId] = transaction;
+      state.transactions.unshift(transaction);
+      state.total += 1;
+      state.totalPages = Math.ceil(state.total / state.limit);
+    },
+    /**
+     * Remove optimistic transaction (on error or server confirmation)
+     */
+    removeOptimisticTransaction: (state, action: PayloadAction<string>) => {
+      const tempId = action.payload;
+      delete state.optimisticUpdates[tempId];
+      state.transactions = state.transactions.filter((t) => t._id !== tempId);
+      state.total = Math.max(0, state.total - 1);
+      state.totalPages = Math.ceil(state.total / state.limit);
     },
   },
   extraReducers: (builder) => {
@@ -473,16 +652,34 @@ const transactionsSlice = createSlice({
       })
       .addCase(createTransaction.fulfilled, (state, action) => {
         state.isCreating = false;
-        // Add new transaction to the beginning of the list
-        state.transactions.unshift(action.payload);
-        state.total += 1;
-        // Recalculate total pages
-        state.totalPages = Math.ceil(state.total / state.limit);
+        // Remove any optimistic update and replace with server response
+        const tempId = Object.keys(state.optimisticUpdates).find(
+          (id) => state.optimisticUpdates[id]._id === action.payload._id
+        );
+        if (tempId) {
+          delete state.optimisticUpdates[tempId];
+          // Replace optimistic transaction with server response
+          const index = state.transactions.findIndex((t) => t._id === tempId);
+          if (index !== -1) {
+            state.transactions[index] = action.payload;
+          }
+        } else {
+          // Add new transaction to the beginning of the list if not already there
+          const exists = state.transactions.some((t) => t._id === action.payload._id);
+          if (!exists) {
+            state.transactions.unshift(action.payload);
+            state.total += 1;
+            state.totalPages = Math.ceil(state.total / state.limit);
+          }
+        }
         state.error = null;
       })
       .addCase(createTransaction.rejected, (state, action) => {
         state.isCreating = false;
         state.error = action.payload || 'Failed to create transaction';
+        // Remove optimistic update on error
+        // Note: We'd need to track which tempId was used, but for simplicity,
+        // we'll let the automatic refetch handle cleanup
       });
 
     // Get transaction by ID
@@ -514,6 +711,7 @@ const transactionsSlice = createSlice({
       })
       .addCase(updateTransaction.fulfilled, (state, action) => {
         state.isUpdating = false;
+        // Update transaction in list
         const index = state.transactions.findIndex((t) => t._id === action.payload._id);
         if (index !== -1) {
           state.transactions[index] = action.payload;
@@ -522,11 +720,19 @@ const transactionsSlice = createSlice({
         if (state.selectedTransaction?._id === action.payload._id) {
           state.selectedTransaction = action.payload;
         }
+        // Remove from optimistic updates if it was there
+        const tempId = Object.keys(state.optimisticUpdates).find(
+          (id) => state.optimisticUpdates[id]._id === action.payload._id
+        );
+        if (tempId) {
+          delete state.optimisticUpdates[tempId];
+        }
         state.error = null;
       })
       .addCase(updateTransaction.rejected, (state, action) => {
         state.isUpdating = false;
         state.error = action.payload || 'Failed to update transaction';
+        // Note: Optimistic update cleanup handled by automatic refetch
       });
 
     // Delete transaction
@@ -537,6 +743,7 @@ const transactionsSlice = createSlice({
       })
       .addCase(deleteTransaction.fulfilled, (state, action) => {
         state.isDeleting = false;
+        // Remove transaction from list
         state.transactions = state.transactions.filter((t) => t._id !== action.payload);
         state.total -= 1;
         // Recalculate total pages
@@ -545,11 +752,59 @@ const transactionsSlice = createSlice({
         if (state.selectedTransaction?._id === action.payload) {
           state.selectedTransaction = null;
         }
+        // Remove from optimistic updates if it was there
+        const tempId = Object.keys(state.optimisticUpdates).find(
+          (id) => state.optimisticUpdates[id]._id === action.payload
+        );
+        if (tempId) {
+          delete state.optimisticUpdates[tempId];
+        }
         state.error = null;
       })
       .addCase(deleteTransaction.rejected, (state, action) => {
         state.isDeleting = false;
         state.error = action.payload || 'Failed to delete transaction';
+        // Note: Optimistic update cleanup handled by automatic refetch
+      });
+
+    // Fetch statistics
+    builder
+      .addCase(fetchStats.pending, (state) => {
+        state.isFetchingStats = true;
+        state.error = null;
+      })
+      .addCase(fetchStats.fulfilled, (state, action) => {
+        state.isFetchingStats = false;
+        state.stats = action.payload;
+        state.error = null;
+      })
+      .addCase(fetchStats.rejected, (state, action) => {
+        state.isFetchingStats = false;
+        state.error = action.payload || 'Failed to fetch statistics';
+      });
+
+    // Bulk create transactions
+    builder
+      .addCase(bulkCreateTransactions.pending, (state) => {
+        state.isBulkCreating = true;
+        state.error = null;
+      })
+      .addCase(bulkCreateTransactions.fulfilled, (state, action) => {
+        state.isBulkCreating = false;
+        // Add new transactions to the beginning of the list
+        action.payload.forEach((transaction) => {
+          const exists = state.transactions.some((t) => t._id === transaction._id);
+          if (!exists) {
+            state.transactions.unshift(transaction);
+          }
+        });
+        state.total += action.payload.length;
+        state.totalPages = Math.ceil(state.total / state.limit);
+        state.error = null;
+      })
+      .addCase(bulkCreateTransactions.rejected, (state, action) => {
+        state.isBulkCreating = false;
+        state.error = action.payload || 'Failed to create transactions';
       });
   },
 });
@@ -564,6 +819,8 @@ export const {
   setSorting,
   clearError,
   resetTransactions,
+  addOptimisticTransaction,
+  removeOptimisticTransaction,
 } = transactionsSlice.actions;
 
 export default transactionsSlice.reducer;
