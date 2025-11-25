@@ -29,6 +29,32 @@
 						"description": "Test endpoint to verify MongoDB database connection status.\n\n**Chunk**: 02 - Database Connection and Mongoose Setup\n\n**Response**: Returns connection state, database name, host, and port information."
 					},
 					"response": []
+				},
+				{
+					"name": "Protected Route Test",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/test-protected",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"test-protected"
+							]
+						},
+						"description": "Test endpoint for authentication middleware.\n\n**Chunk**: 07 - Authentication Middleware and Protected Routes ✅\n\n**Requires Authentication**: Yes (Bearer token)\n\n**Tests**:\n1. Access without token - should return 401\n2. Access with valid token - should return 200 with user data\n3. Access with expired token - should return 401\n\n**Response**: Returns authenticated user information"
+					},
+					"response": []
 				}
 			],
 			"description": "Endpoints for testing system health and database connectivity"
