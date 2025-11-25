@@ -18,9 +18,7 @@ export const databaseConfig = {
     heartbeatFrequencyMS: 10000, // Heartbeat every 10 seconds
     retryWrites: true,
     retryReads: true,
-    // Buffer commands when connection is down
-    bufferMaxEntries: 0,
-    // Disable mongoose buffering
+    // Disable mongoose buffering (bufferMaxEntries is deprecated in newer Mongoose versions)
     bufferCommands: false,
   },
   
