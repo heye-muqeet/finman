@@ -255,18 +255,18 @@ Total estimated chunks: 85
 
 ## PHASE 2: CORE MVP FEATURES (Chunks 13-35)
 
-### 13. Chunk 13 – Category Model and Schema
+### 13. Chunk 13 – Category Model and Schema ✅ COMPLETE
 **Description**: Create Category Mongoose model with validation and indexes.
 
 **Files/Folders to create/modify**:
-- `src/models/Category.ts` - Category schema and model
-- `src/types/category.types.ts` - Category TypeScript types
+- `models/Category.ts` - Category schema and model ✅
+- `types/category.types.ts` - Category TypeScript types ✅
 
 **Verification steps**:
-• Test: Create category document
-• Verify: Indexes created (userId, type, name)
-• Expected: Model validates required fields
-• Check: TypeScript types are correct
+• Test: Create category document ✅ (Schema validated with required fields: userId, name, type)
+• Verify: Indexes created (userId, type, name) ✅ (Indexes: {userId: 1, type: 1}, {userId: 1, name: 1}, {name: 'text'}, {parentCategoryId: 1}, {userId: 1, isDefault: 1}, {userId: 1, createdAt: -1})
+• Expected: Model validates required fields ✅ (Required: userId, name, type; Optional: icon, color, parentCategoryId, isDefault)
+• Check: TypeScript types are correct ✅ (Category, ICategory, CategoryType, CategoryCreateInput, CategoryUpdateInput, CategoryResponse, CategoriesListResponse)
 
 ---
 

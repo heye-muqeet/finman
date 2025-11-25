@@ -3,6 +3,8 @@
  * Layout wrapper for all dashboard pages with Header and Sidebar
  */
 
+'use client';
+
 import ProtectedRoute from '@/components/common/ProtectedRoute';
 import Header from '@/components/common/Header';
 import Sidebar from '@/components/common/Sidebar';
