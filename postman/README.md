@@ -37,6 +37,7 @@ The collection is organized by feature/chunk:
 
 - **Test & Health** - System health and database connectivity endpoints
 - **Authentication** - User registration, login, and session management
+- **Categories** - Category CRUD operations (list, create, get, update, delete)
 
 ## Environment Variables
 
@@ -54,6 +55,7 @@ Some variables are automatically set by test scripts:
 - `accessToken` - Set after successful registration or login
 - `refreshToken` - Set after successful registration or login
 - `userId` - Set after successful registration or login
+- `categoryId` - Set after successful category creation
 
 ## Usage
 
@@ -84,6 +86,7 @@ This collection is maintained and updated with each development chunk:
 - ✅ **Chunk 07** - Protected Route Test endpoint
 - ✅ **Chunk 09** - Login Page UI with Radix UI Components (No new API endpoints)
 - ✅ **Chunk 10** - Registration Page UI with password strength indicator (No new API endpoints)
+- ✅ **Chunk 15** - Category API Endpoints (GET list, POST create, GET by ID, PUT update, DELETE)
 - ⏳ Additional endpoints will be added as chunks are completed
 
 ## Updating the Collection

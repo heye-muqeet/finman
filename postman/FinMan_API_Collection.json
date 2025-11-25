@@ -170,6 +170,220 @@
 				}
 			],
 			"description": "Authentication endpoints for user registration, login, and session management"
+		},
+		{
+			"name": "Categories",
+			"item": [
+				{
+					"name": "Get All Categories",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/categories?type=expense&includeSubcategories=true",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"categories"
+							],
+							"query": [
+								{
+									"key": "type",
+									"value": "expense",
+									"description": "Optional: Filter by category type (income, expense, both)"
+								},
+								{
+									"key": "includeSubcategories",
+									"value": "true",
+									"description": "Optional: Include subcategories (default: true)"
+								}
+							]
+						},
+						"description": "Get all categories for the authenticated user.\n\n**Chunk**: 15 - Category API Endpoints (CRUD) ✅\n\n**Requires Authentication**: Yes (Bearer token)\n\n**Query Parameters**:\n- `type` (optional): Filter by category type - `income`, `expense`, or `both`\n- `includeSubcategories` (optional): Include subcategories - `true` or `false` (default: `true`)\n\n**Response**: Returns list of categories with total count"
+					},
+					"response": []
+				},
+				{
+					"name": "Create Category",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 201) {",
+									"    const response = pm.response.json();",
+									"    if (response.data && response.data.category && response.data.category._id) {",
+									"        pm.environment.set(\"categoryId\", response.data.category._id);",
+									"    }",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Food & Dining\",\n  \"type\": \"expense\",\n  \"icon\": \"utensils\",\n  \"color\": \"#FF5733\",\n  \"isDefault\": false\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/categories",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"categories"
+							]
+						},
+						"description": "Create a new category for the authenticated user.\n\n**Chunk**: 15 - Category API Endpoints (CRUD) ✅\n\n**Requires Authentication**: Yes (Bearer token)\n\n**Request Body**:\n- `name` (required): Category name (1-100 characters)\n- `type` (required): Category type - `income`, `expense`, or `both`\n- `icon` (optional): Icon identifier (max 50 characters)\n- `color` (optional): Hex color code (e.g., #FF5733 or #F73)\n- `parentCategoryId` (optional): Parent category ID for subcategories\n- `isDefault` (optional): Whether this is a default category\n\n**Validation**:\n- Prevents duplicate category names for same user + type\n- Validates parent category exists and belongs to user\n- Prevents circular references in category hierarchy\n\n**Response**: Returns created category with 201 status\n\n**Auto-Set Variables**:\n- `categoryId` - Automatically set from the created category's `_id` field"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Category by ID",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/categories/{{categoryId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"categories",
+								"{{categoryId}}"
+							],
+							"variable": [
+								{
+									"key": "categoryId",
+									"value": "",
+									"description": "Category ID (MongoDB ObjectId)"
+								}
+							]
+						},
+						"description": "Get a single category by ID.\n\n**Chunk**: 15 - Category API Endpoints (CRUD) ✅\n\n**Requires Authentication**: Yes (Bearer token)\n\n**Path Parameters**:\n- `id`: Category ID (MongoDB ObjectId)\n\n**Response**: Returns category details\n\n**Errors**:\n- 404: Category not found\n- 403: Category does not belong to user"
+					},
+					"response": []
+				},
+				{
+					"name": "Update Category",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Updated Category Name\",\n  \"color\": \"#00FF00\",\n  \"icon\": \"updated-icon\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/categories/{{categoryId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"categories",
+								"{{categoryId}}"
+							],
+							"variable": [
+								{
+									"key": "categoryId",
+									"value": "",
+									"description": "Category ID (MongoDB ObjectId)"
+								}
+							]
+						},
+						"description": "Update a category by ID.\n\n**Chunk**: 15 - Category API Endpoints (CRUD) ✅\n\n**Requires Authentication**: Yes (Bearer token)\n\n**Path Parameters**:\n- `id`: Category ID (MongoDB ObjectId)\n\n**Request Body** (all fields optional):\n- `name`: Category name (1-100 characters)\n- `type`: Category type - `income`, `expense`, or `both`\n- `icon`: Icon identifier (max 50 characters)\n- `color`: Hex color code\n- `parentCategoryId`: Parent category ID (use `null` to remove parent)\n- `isDefault`: Whether this is a default category\n\n**Validation**:\n- Validates ownership\n- Prevents duplicate names when name/type changes\n- Validates parent category if updated\n- Prevents circular references\n\n**Response**: Returns updated category"
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Category",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/categories/{{categoryId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"categories",
+								"{{categoryId}}"
+							],
+							"variable": [
+								{
+									"key": "categoryId",
+									"value": "",
+									"description": "Category ID (MongoDB ObjectId)"
+								}
+							]
+						},
+						"description": "Delete a category by ID.\n\n**Chunk**: 15 - Category API Endpoints (CRUD) ✅\n\n**Requires Authentication**: Yes (Bearer token)\n\n**Path Parameters**:\n- `id`: Category ID (MongoDB ObjectId)\n\n**Validation**:\n- Validates ownership\n- Prevents deletion if category has subcategories\n\n**Response**: Returns success message with 200 status\n\n**Errors**:\n- 404: Category not found\n- 403: Category does not belong to user\n- 400: Category has subcategories (must delete or reassign subcategories first)"
+					},
+					"response": []
+				}
+			],
+			"description": "Category management endpoints for CRUD operations"
 		}
 	],
 	"event": [
