@@ -67,6 +67,10 @@ export interface TransactionsState {
   optimisticUpdates: {
     [key: string]: Transaction; // Temporary transactions pending server confirmation
   };
+  // Form state management
+  formDraft: Partial<TransactionCreateInput> | null; // Draft transaction data
+  formValidationErrors: Record<string, string> | null; // Form validation errors
+  isFormDirty: boolean; // Whether form has unsaved changes
 }
 
 /**
@@ -100,6 +104,10 @@ const initialState: TransactionsState = {
   lastFetched: null,
   // Optimistic updates
   optimisticUpdates: {},
+  // Form state
+  formDraft: null,
+  formValidationErrors: null,
+  isFormDirty: false,
 };
 
 /**
@@ -613,6 +621,9 @@ const transactionsSlice = createSlice({
       state.error = null;
       state.lastFetched = null;
       state.optimisticUpdates = {};
+      state.formDraft = null;
+      state.formValidationErrors = null;
+      state.isFormDirty = false;
     },
     /**
      * Add optimistic transaction (for immediate UI update)
@@ -633,6 +644,35 @@ const transactionsSlice = createSlice({
       state.transactions = state.transactions.filter((t) => t._id !== tempId);
       state.total = Math.max(0, state.total - 1);
       state.totalPages = Math.ceil(state.total / state.limit);
+    },
+    /**
+     * Save form draft
+     */
+    saveFormDraft: (state, action: PayloadAction<Partial<TransactionCreateInput>>) => {
+      state.formDraft = action.payload;
+      state.isFormDirty = true;
+    },
+    /**
+     * Clear form draft
+     */
+    clearFormDraft: (state) => {
+      state.formDraft = null;
+      state.isFormDirty = false;
+      state.formValidationErrors = null;
+    },
+    /**
+     * Set form validation errors
+     */
+    setFormValidationErrors: (state, action: PayloadAction<Record<string, string> | null>) => {
+      state.formValidationErrors = action.payload;
+    },
+    /**
+     * Reset form state
+     */
+    resetFormState: (state) => {
+      state.formDraft = null;
+      state.formValidationErrors = null;
+      state.isFormDirty = false;
     },
   },
   extraReducers: (builder) => {
@@ -836,6 +876,10 @@ export const {
   resetTransactions,
   addOptimisticTransaction,
   removeOptimisticTransaction,
+  saveFormDraft,
+  clearFormDraft,
+  setFormValidationErrors,
+  resetFormState,
 } = transactionsSlice.actions;
 
 export default transactionsSlice.reducer;
