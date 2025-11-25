@@ -572,6 +572,19 @@ const transactionsSlice = createSlice({
       }
     },
     /**
+     * Set page
+     */
+    setPage: (state, action: PayloadAction<number>) => {
+      state.page = action.payload;
+    },
+    /**
+     * Set limit
+     */
+    setLimit: (state, action: PayloadAction<number>) => {
+      state.limit = action.payload;
+      state.page = 1; // Reset to first page when limit changes
+    },
+    /**
      * Set sorting
      */
     setSorting: (state, action: PayloadAction<{ sortBy: string; sortOrder: 'asc' | 'desc' }>) => {
@@ -816,6 +829,8 @@ export const {
   updateFilter,
   clearFilters,
   setPagination,
+  setPage,
+  setLimit,
   setSorting,
   clearError,
   resetTransactions,
