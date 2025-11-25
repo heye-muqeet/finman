@@ -497,6 +497,118 @@ export async function getUserStats(
 }
 
 /**
+ * Bulk create transactions
+ * @param userId - User ID
+ * @param transactions - Array of transaction create inputs
+ * @returns Array of created transactions
+ */
+export async function bulkCreateTransactions(
+  userId: string,
+  transactions: TransactionCreateInput[]
+): Promise<{ transactions: Transaction[]; message: string }> {
+  await connectDB();
+
+  try {
+    // Validate input array
+    if (!Array.isArray(transactions) || transactions.length === 0) {
+      throw new ValidationError('Transactions array cannot be empty');
+    }
+
+    if (transactions.length > 100) {
+      throw new ValidationError('Cannot create more than 100 transactions at once');
+    }
+
+    // Validate all transactions
+    const validatedTransactions: any[] = [];
+    const errors: string[] = [];
+
+    for (let i = 0; i < transactions.length; i++) {
+      const input = transactions[i];
+      try {
+        // Validate category for each transaction
+        if (input.categoryId) {
+          const category = await Category.findById(input.categoryId);
+          if (!category) {
+            errors.push(`Transaction ${i + 1}: Category not found`);
+            continue;
+          }
+
+          if (category.userId.toString() !== userId) {
+            errors.push(`Transaction ${i + 1}: Category does not belong to this user`);
+            continue;
+          }
+
+          if (category.type !== input.type) {
+            errors.push(`Transaction ${i + 1}: Category type does not match transaction type`);
+            continue;
+          }
+        }
+
+        // Validate recurring pattern if provided
+        if (input.isRecurring && input.recurringPattern) {
+          const validationError = validateRecurringPattern(input.recurringPattern);
+          if (validationError) {
+            errors.push(`Transaction ${i + 1}: ${validationError}`);
+            continue;
+          }
+        }
+
+        validatedTransactions.push({
+          userId: new Types.ObjectId(userId),
+          type: input.type,
+          amount: input.amount,
+          currency: input.currency.toUpperCase().trim(),
+          categoryId: new Types.ObjectId(input.categoryId),
+          description: input.description?.trim(),
+          date: input.date,
+          paymentMethod: input.paymentMethod,
+          tags: input.tags || [],
+          location: input.location,
+          receiptId: input.receiptId ? new Types.ObjectId(input.receiptId) : undefined,
+          isRecurring: input.isRecurring || false,
+          recurringPattern: input.recurringPattern,
+        });
+      } catch (error) {
+        errors.push(`Transaction ${i + 1}: ${error instanceof Error ? error.message : 'Validation failed'}`);
+      }
+    }
+
+    if (errors.length > 0) {
+      throw new ValidationError(`Validation errors: ${errors.join('; ')}`);
+    }
+
+    // Bulk insert validated transactions
+    const createdTransactions = await TransactionModel.insertMany(validatedTransactions);
+
+    loggerService.logDatabase('BULK_CREATE', 'transactions', {
+      userId,
+      count: createdTransactions.length,
+    });
+    loggerService.logUserAction('bulk_create_transactions', userId, {
+      count: createdTransactions.length,
+    });
+
+    // Emit WebSocket events for each transaction (prepared for Chunk 73/74)
+    createdTransactions.forEach((transaction) => {
+      emitWebSocketEvent('transaction:created', userId, {
+        transaction: toTransactionObject(transaction),
+      });
+    });
+
+    return {
+      transactions: createdTransactions.map((t) => toTransactionObject(t)),
+      message: `Successfully created ${createdTransactions.length} transaction(s)`,
+    };
+  } catch (error) {
+    if (error instanceof ValidationError) {
+      throw error;
+    }
+    loggerService.error('Failed to bulk create transactions', error, { userId });
+    throw new ValidationError('Failed to bulk create transactions');
+  }
+}
+
+/**
  * Calculate next occurrence date for recurring transaction
  * @param currentDate - Current date
  * @param frequency - Recurring frequency (daily, weekly, monthly, yearly)

@@ -650,9 +650,88 @@
 						"description": "Delete a transaction by ID.\n\n**Chunk**: 20 - Transaction API Endpoints (CRUD) ✅\n\n**Requires Authentication**: Yes (Bearer token)\n\n**Path Parameters**:\n- `id`: Transaction ID (MongoDB ObjectId)\n\n**Validation**:\n- Validates ownership\n\n**Response**: Returns success message with 200 status\n\n**Errors**:\n- 404: Transaction not found\n- 403: Transaction does not belong to user"
 					},
 					"response": []
+				},
+				{
+					"name": "Get Transaction Statistics",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/transactions/stats?startDate=2024-01-01T00:00:00Z&endDate=2024-12-31T23:59:59Z",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"transactions",
+								"stats"
+							],
+							"query": [
+								{
+									"key": "startDate",
+									"value": "2024-01-01T00:00:00Z",
+									"description": "Optional: Start date for filtering (ISO 8601 format)"
+								},
+								{
+									"key": "endDate",
+									"value": "2024-12-31T23:59:59Z",
+									"description": "Optional: End date for filtering (ISO 8601 format)"
+								}
+							]
+						},
+						"description": "Get transaction statistics for the authenticated user.\n\n**Chunk**: 21 - Transaction Redux Slice (Enhanced) ✅\n\n**Requires Authentication**: Yes (Bearer token)\n\n**Query Parameters**:\n- `startDate` (optional): Start date for filtering (ISO 8601 format)\n- `endDate` (optional): End date for filtering (ISO 8601 format)\n\n**Response**: Returns transaction statistics including:\n- `income`: { total, count, average, min, max }\n- `expense`: { total, count, average, min, max }\n- `net`: Net amount (income - expense)\n- `totalTransactions`: Total number of transactions\n\n**Errors**:\n- 400: Invalid date format or date range"
+					},
+					"response": []
+				},
+				{
+					"name": "Bulk Create Transactions",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"transactions\": [\n    {\n      \"type\": \"expense\",\n      \"amount\": 50.00,\n      \"currency\": \"USD\",\n      \"categoryId\": \"{{categoryId}}\",\n      \"description\": \"Grocery shopping\",\n      \"date\": \"2024-01-15T10:30:00Z\",\n      \"paymentMethod\": \"card\"\n    },\n    {\n      \"type\": \"income\",\n      \"amount\": 2000.00,\n      \"currency\": \"USD\",\n      \"categoryId\": \"{{categoryId}}\",\n      \"description\": \"Salary\",\n      \"date\": \"2024-01-01T00:00:00Z\",\n      \"paymentMethod\": \"bank_transfer\"\n    }\n  ]\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/transactions/bulk",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"transactions",
+								"bulk"
+							]
+						},
+						"description": "Create multiple transactions at once.\n\n**Chunk**: 21 - Transaction Redux Slice (Enhanced) ✅\n\n**Requires Authentication**: Yes (Bearer token)\n\n**Request Body**:\n- `transactions` (required): Array of transaction objects (1-100 transactions)\n  - Each transaction follows the same schema as single transaction creation\n  - All fields are validated individually\n\n**Validation**:\n- Validates each transaction individually\n- Returns detailed errors for failed transactions\n- Continues processing even if some transactions fail\n\n**Response**: Returns:\n- `transactions`: Array of successfully created transactions\n- `successCount`: Number of successfully created transactions\n- `failedCount`: Number of failed transactions\n- `failedTransactions`: Array of failed transactions with error details (if any)\n\n**Limits**:\n- Maximum 100 transactions per request\n\n**Errors**:\n- 400: Validation errors (all or some transactions invalid)\n- 500: Server error (if all transactions fail)"
+					},
+					"response": []
 				}
 			],
-			"description": "Transaction management endpoints for CRUD operations"
+			"description": "Transaction management endpoints for CRUD operations, statistics, and bulk operations"
 		}
 	],
 	"event": [

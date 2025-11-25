@@ -411,16 +411,25 @@ Total estimated chunks: 85
 **Files/Folders to create/modify**:
 - `src/lib/store/slices/transactionsSlice.ts` - Transaction Redux slice ✅
 - `src/lib/store/index.ts` - Update store configuration to include transactions slice ✅
+- `src/app/api/v1/transactions/stats/route.ts` - Transaction statistics endpoint ✅ (Added to support fetchStats thunk)
+- `src/app/api/v1/transactions/bulk/route.ts` - Bulk create transactions endpoint ✅ (Added to support bulkCreateTransactions thunk)
 
 **Verification steps**:
 • Test: Dispatch fetchTransactions action ✅ (Async thunk implemented with filters, pagination, sorting)
 • Test: Dispatch createTransaction action ✅ (Async thunk implemented)
+• Test: Dispatch fetchStats action ✅ (Async thunk implemented with date range support)
+• Test: Dispatch bulkCreateTransactions action ✅ (Async thunk implemented with validation)
 • Expected: State updates correctly ✅ (All CRUD operations update state correctly)
 • Verify: Pagination state works ✅ (Pagination state stored: page, limit, total, totalPages)
-• Check: Loading and error states ✅ (Separate loading states: isLoading, isCreating, isUpdating, isDeleting; error state managed)
+• Check: Loading and error states ✅ (Separate loading states: isLoading, isCreating, isUpdating, isDeleting, isFetchingStats, isBulkCreating; error state managed)
 • Verify: Filters stored in Redux state ✅ (Filters state with setFilters, updateFilter, clearFilters actions)
 • Verify: Sorting stored in Redux state ✅ (sortBy and sortOrder state with setSorting action)
+• Verify: Statistics state works ✅ (Stats state with fetchStats thunk)
+• Verify: Optimistic updates support ✅ (Optimistic updates tracking with addOptimisticTransaction, removeOptimisticTransaction actions)
+• Verify: Automatic refetch after mutations ✅ (create, update, delete automatically refetch transactions and stats)
 • Verify: Transactions NOT persisted ✅ (Not included in Redux Persist whitelist)
+• Verify: API endpoints created ✅ (GET /api/v1/transactions/stats, POST /api/v1/transactions/bulk)
+• Verify: Postman collection updated ✅ (Both endpoints added with descriptions)
 
 ---
 

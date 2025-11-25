@@ -2455,6 +2455,34 @@ lib/
 7. **Monitoring**: Monitor version usage
 8. **Communication**: Communicate changes clearly
 
+#### Versioning Summary
+
+**Current Status:**
+- **Active Version**: v1 (Stable)
+- **Supported Versions**: v1
+- **Deprecated Versions**: None
+- **Upcoming Versions**: v2 (Planned for future breaking changes)
+
+**Version Lifecycle:**
+1. **Development**: New version in development
+2. **Beta**: Version available for testing with limited support
+3. **Stable**: Version is production-ready and fully supported
+4. **Deprecated**: Version is still supported but will be sunset
+5. **Sunset**: Version is no longer supported and will be removed
+
+**When to Create a New Version:**
+- Breaking changes to request/response formats
+- Changes to authentication requirements
+- Removal of endpoints or fields
+- Significant changes to business logic that affect API contracts
+- Major architectural changes
+
+**Version Support Policy:**
+- **Minimum Support Period**: 12 months after deprecation announcement
+- **Deprecation Notice**: 6 months before deprecation
+- **Sunset Period**: 3 months after deprecation date
+- **Migration Assistance**: Provided during deprecation period
+
 #### Version Usage Tracking
 
 ```typescript
@@ -2470,6 +2498,430 @@ export async function trackVersionUsage(version: string, endpoint: string) {
   });
 }
 ```
+
+---
+
+### Standardized Error Handling
+
+#### Overview
+FinMan implements a standardized error handling system across all API endpoints to ensure consistent error responses, better debugging, and improved user experience. All endpoints use centralized error handling utilities.
+
+#### Error Response Format
+
+All error responses follow a consistent structure:
+
+```typescript
+{
+  success: false,
+  error: {
+    code: "ERROR_CODE",
+    message: "Human-readable error message",
+    details: { /* Optional additional details */ }
+  },
+  timestamp: "2024-01-15T10:30:00.000Z"
+}
+```
+
+#### Error Classes
+
+FinMan provides custom error classes for different error types:
+
+**Location**: `src/lib/utils/error-handler.ts`
+
+```typescript
+// Base error class
+export class AppError extends Error {
+  constructor(
+    public statusCode: number,
+    public message: string,
+    public code?: string,
+    public details?: unknown
+  ) {
+    super(message);
+    this.name = 'AppError';
+  }
+}
+
+// Specific error types
+export class ValidationError extends AppError {
+  constructor(message: string, details?: unknown) {
+    super(400, message, 'VALIDATION_ERROR', details);
+  }
+}
+
+export class NotFoundError extends AppError {
+  constructor(resource: string, id?: string) {
+    super(404, `${resource} not found${id ? ` with id: ${id}` : ''}`, 'NOT_FOUND');
+  }
+}
+
+export class UnauthorizedError extends AppError {
+  constructor(message: string = 'Unauthorized') {
+    super(401, message, 'UNAUTHORIZED');
+  }
+}
+
+export class ForbiddenError extends AppError {
+  constructor(message: string = 'Forbidden') {
+    super(403, message, 'FORBIDDEN');
+  }
+}
+```
+
+#### Standardized Response Utilities
+
+**Location**: `src/lib/utils/api-response.ts`
+
+```typescript
+// Success response
+export function successResponse<T>(
+  data: T,
+  message?: string,
+  status: number = 200
+): NextResponse<ApiResponse<T>>
+
+// Error response
+export function errorResponse(
+  error: {
+    code: string;
+    message: string;
+    details?: unknown;
+  },
+  status: number = 400
+): NextResponse<ApiResponse>
+
+// Paginated response
+export function paginatedResponse<T>(
+  data: T[],
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+  },
+  message?: string
+): NextResponse<ApiResponse<T[]>>
+```
+
+#### Error Handler
+
+**Location**: `src/lib/utils/error-handler.ts`
+
+```typescript
+export function handleError(error: unknown): NextResponse {
+  if (error instanceof AppError) {
+    return NextResponse.json(
+      {
+        success: false,
+        error: {
+          code: error.code || 'ERROR',
+          message: error.message,
+          details: error.details,
+        },
+        timestamp: new Date().toISOString(),
+      },
+      { status: error.statusCode }
+    );
+  }
+
+  // Unknown error - don't expose internal details
+  return NextResponse.json(
+    {
+      success: false,
+      error: {
+        code: 'INTERNAL_ERROR',
+        message: 'An unexpected error occurred',
+      },
+      timestamp: new Date().toISOString(),
+    },
+    { status: 500 }
+  );
+}
+```
+
+#### Implementation in Endpoints
+
+All API endpoints should follow this pattern:
+
+```typescript
+import { NextRequest, NextResponse } from 'next/server';
+import { withAuth } from '@/lib/middleware/auth.middleware';
+import { successResponse, errorResponse } from '@/lib/utils/api-response';
+import { ValidationError, NotFoundError, handleError } from '@/lib/utils/error-handler';
+
+export const GET = withAuth(async (request: NextRequest, { user }) => {
+  try {
+    // Validate input
+    const { searchParams } = new URL(request.url);
+    const id = searchParams.get('id');
+    
+    if (!id) {
+      return errorResponse(
+        {
+          code: 'VALIDATION_ERROR',
+          message: 'ID parameter is required',
+        },
+        400
+      );
+    }
+
+    // Business logic
+    const data = await getData(id, user._id);
+    
+    if (!data) {
+      throw new NotFoundError('Resource', id);
+    }
+
+    // Success response
+    return successResponse(data, 'Resource retrieved successfully');
+    
+  } catch (error) {
+    // Handle known errors
+    if (error instanceof ValidationError) {
+      return errorResponse(
+        {
+          code: 'VALIDATION_ERROR',
+          message: error.message,
+          details: error.details,
+        },
+        400
+      );
+    }
+
+    if (error instanceof NotFoundError) {
+      return errorResponse(
+        {
+          code: 'NOT_FOUND',
+          message: error.message,
+        },
+        404
+      );
+    }
+
+    // Handle unknown errors
+    return handleError(error);
+  }
+});
+```
+
+#### Error Codes Reference
+
+| Code | Status | Description | Usage |
+|------|--------|-------------|-------|
+| `VALIDATION_ERROR` | 400 | Input validation failed | Invalid request data |
+| `UNAUTHORIZED` | 401 | Authentication required | Missing/invalid token |
+| `FORBIDDEN` | 403 | Insufficient permissions | User lacks permission |
+| `NOT_FOUND` | 404 | Resource not found | Requested resource doesn't exist |
+| `CONFLICT` | 409 | Resource conflict | Duplicate or conflicting data |
+| `RATE_LIMIT_EXCEEDED` | 429 | Too many requests | Rate limit exceeded |
+| `INTERNAL_ERROR` | 500 | Server error | Unexpected server error |
+| `SERVICE_UNAVAILABLE` | 503 | Service unavailable | External service down |
+
+#### Best Practices
+
+1. **Always Use Error Classes**: Use custom error classes instead of throwing generic errors
+2. **Provide Context**: Include relevant details in error responses
+3. **Don't Expose Internals**: Never expose stack traces or internal implementation details
+4. **Log Errors**: Log all errors with appropriate severity levels
+5. **User-Friendly Messages**: Provide clear, actionable error messages
+6. **Consistent Format**: Always use `errorResponse()` or `handleError()` for errors
+7. **Status Codes**: Use appropriate HTTP status codes
+8. **Error Details**: Include validation errors in `details` field when applicable
+
+---
+
+### Request/Response Logging Middleware
+
+#### Overview
+FinMan includes comprehensive request/response logging middleware to track all API calls for monitoring, debugging, and audit purposes. The middleware automatically logs request details, response status, and performance metrics.
+
+#### Implementation
+
+**Location**: `src/lib/middleware/request-logger.middleware.ts`
+
+#### Features
+
+1. **Automatic Request Logging**: Logs all incoming requests with metadata
+2. **Response Logging**: Logs response status, timing, and metadata
+3. **Request ID Generation**: Generates unique request IDs for tracking
+4. **Performance Tracking**: Tracks response times for performance monitoring
+5. **User Context**: Includes user information when available
+6. **Sensitive Data Sanitization**: Automatically redacts sensitive fields
+7. **Error Logging**: Logs errors with full context
+
+#### Usage
+
+##### Option 1: Middleware Wrapper (Recommended)
+
+Wrap your route handler with `withRequestLogging`:
+
+```typescript
+import { withRequestLogging } from '@/lib/middleware/request-logger.middleware';
+import { withAuth } from '@/lib/middleware/auth.middleware';
+
+export const GET = withAuth(
+  withRequestLogging(async (request: NextRequest, { user }) => {
+    // Your route handler logic
+    return successResponse(data);
+  })
+);
+```
+
+##### Option 2: Manual Logging
+
+Call logging functions manually in your route handler:
+
+```typescript
+import { requestLogger, logResponse } from '@/lib/middleware/request-logger.middleware';
+
+export const GET = withAuth(async (request: NextRequest, { user }) => {
+  const requestId = await requestLogger(request, user._id);
+  const startTime = Date.now();
+
+  try {
+    const data = await getData();
+    const response = successResponse(data);
+    
+    logResponse(request, response, requestId, startTime, user._id);
+    response.headers.set('X-Request-ID', requestId);
+    
+    return response;
+  } catch (error) {
+    // Error logging is automatic
+    throw error;
+  }
+});
+```
+
+#### Logged Information
+
+**Request Logging:**
+- Request ID (unique identifier)
+- HTTP Method
+- URL and query parameters
+- Client IP address
+- User Agent
+- Content Type
+- User ID (if authenticated)
+- Timestamp
+
+**Response Logging:**
+- Request ID
+- HTTP Method and URL
+- Status Code
+- Response Time (in milliseconds)
+- Content Type
+- User ID (if authenticated)
+- Timestamp
+
+#### Configuration Options
+
+```typescript
+withRequestLogging(handler, {
+  logRequestBody: false,    // Log request body (default: false)
+  logResponseBody: false,    // Log response body (default: false)
+  excludePaths: ['/health']  // Paths to exclude from logging
+})
+```
+
+#### Request ID Tracking
+
+The middleware automatically:
+1. Generates a unique request ID for each request
+2. Adds it to response headers as `X-Request-ID`
+3. Includes it in all log entries
+4. Adds response time header as `X-Response-Time`
+
+**Example Response Headers:**
+```
+X-Request-ID: req_1705312200000_abc123xyz
+X-Response-Time: 45ms
+```
+
+#### Log Levels
+
+The middleware uses appropriate log levels based on response status:
+- **HTTP (Info)**: Status codes 200-399 (successful requests)
+- **Warn**: Status codes 400-499 (client errors)
+- **Error**: Status codes 500+ (server errors)
+
+#### Sensitive Data Handling
+
+The middleware automatically sanitizes sensitive fields in request bodies:
+- `password`
+- `token`
+- `accessToken`
+- `refreshToken`
+- `secret`
+- `apiKey`
+- `authorization`
+- `creditCard`
+- `cvv`
+- `ssn`
+
+Sensitive values are replaced with `[REDACTED]` in logs.
+
+#### Example Log Output
+
+**Request Log:**
+```json
+{
+  "level": "http",
+  "message": "API Request",
+  "requestId": "req_1705312200000_abc123xyz",
+  "method": "GET",
+  "url": "/api/v1/transactions",
+  "ip": "192.168.1.1",
+  "userAgent": "Mozilla/5.0...",
+  "userId": "507f1f77bcf86cd799439011",
+  "timestamp": "2024-01-15T10:30:00.000Z"
+}
+```
+
+**Response Log:**
+```json
+{
+  "level": "http",
+  "message": "API Response",
+  "requestId": "req_1705312200000_abc123xyz",
+  "method": "GET",
+  "url": "/api/v1/transactions",
+  "statusCode": 200,
+  "responseTime": "45ms",
+  "userId": "507f1f77bcf86cd799439011",
+  "timestamp": "2024-01-15T10:30:00.045Z"
+}
+```
+
+#### Best Practices
+
+1. **Use Consistently**: Apply logging middleware to all API endpoints
+2. **Exclude Health Checks**: Exclude health check endpoints from detailed logging
+3. **Monitor Performance**: Use response time logs to identify slow endpoints
+4. **Track Errors**: Review error logs regularly for issues
+5. **Request ID**: Use request IDs for tracing requests across services
+6. **Privacy**: Ensure sensitive data is properly sanitized
+7. **Performance**: Logging should not significantly impact response times
+
+#### Integration with Error Handling
+
+The logging middleware integrates seamlessly with error handling:
+
+```typescript
+export const POST = withAuth(
+  withRequestLogging(async (request: NextRequest, { user }) => {
+    try {
+      // Your logic
+      return successResponse(data);
+    } catch (error) {
+      // Errors are automatically logged by the middleware
+      return handleError(error);
+    }
+  })
+);
+```
+
+---
 
 ### Authentication Endpoints (v1)
 ```
@@ -3409,17 +3861,17 @@ GET    /api/categories/tree        # Get categories as tree structure
 
 ### Transaction Endpoints
 ```
-GET    /api/transactions           # Get all transactions (with filters)
+GET    /api/v1/transactions           # Get all transactions (with filters)
 GET    /api/search/transactions    # Advanced search transactions
 GET    /api/search/categories      # Search categories
 GET    /api/search/autocomplete    # Get autocomplete suggestions
 GET    /api/search/suggestions     # Get search suggestions
-GET    /api/transactions/:id       # Get transaction by ID
-POST   /api/transactions           # Create transaction
-PUT    /api/transactions/:id       # Update transaction
-DELETE /api/transactions/:id       # Delete transaction
-GET    /api/transactions/summary   # Get transaction summary
-POST   /api/transactions/bulk      # Create multiple transactions
+GET    /api/v1/transactions/:id       # Get transaction by ID
+POST   /api/v1/transactions           # Create transaction
+PUT    /api/v1/transactions/:id       # Update transaction
+DELETE /api/v1/transactions/:id       # Delete transaction
+GET    /api/v1/transactions/stats   # Get transaction statistics
+POST   /api/v1/transactions/bulk      # Create multiple transactions
 GET    /api/transactions/export/csv    # Export transactions (CSV)
 GET    /api/transactions/export/excel  # Export transactions (Excel)
 GET    /api/transactions/export/pdf    # Export transactions (PDF)
@@ -4557,6 +5009,333 @@ Document API routes using JSDoc comments:
  *         description: Validation error
  *       401:
  *         description: Unauthorized
+ */
+```
+
+#### Transaction Statistics Endpoint
+
+```typescript
+/**
+ * @swagger
+ * /api/v1/transactions/stats:
+ *   get:
+ *     summary: Get transaction statistics for authenticated user
+ *     description: Retrieve comprehensive statistics about user's transactions including income, expense, and net calculations. Supports optional date range filtering.
+ *     tags: [Transactions]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: startDate
+ *         schema:
+ *           type: string
+ *           format: date-time
+ *         description: Optional start date for filtering (ISO 8601 format - YYYY-MM-DD or YYYY-MM-DDTHH:mm:ss.sssZ)
+ *         example: "2024-01-01T00:00:00Z"
+ *       - in: query
+ *         name: endDate
+ *         schema:
+ *           type: string
+ *           format: date-time
+ *         description: Optional end date for filtering (ISO 8601 format - YYYY-MM-DD or YYYY-MM-DDTHH:mm:ss.sssZ)
+ *         example: "2024-12-31T23:59:59Z"
+ *     responses:
+ *       200:
+ *         description: Transaction statistics retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: "Transaction statistics retrieved successfully"
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     stats:
+ *                       type: object
+ *                       properties:
+ *                         income:
+ *                           type: object
+ *                           properties:
+ *                             total:
+ *                               type: number
+ *                               description: Total income amount
+ *                               example: 50000.00
+ *                             count:
+ *                               type: number
+ *                               description: Number of income transactions
+ *                               example: 12
+ *                             average:
+ *                               type: number
+ *                               description: Average income per transaction
+ *                               example: 4166.67
+ *                             min:
+ *                               type: number
+ *                               description: Minimum income amount
+ *                               example: 1000.00
+ *                             max:
+ *                               type: number
+ *                               description: Maximum income amount
+ *                               example: 10000.00
+ *                         expense:
+ *                           type: object
+ *                           properties:
+ *                             total:
+ *                               type: number
+ *                               description: Total expense amount
+ *                               example: 25000.00
+ *                             count:
+ *                               type: number
+ *                               description: Number of expense transactions
+ *                               example: 45
+ *                             average:
+ *                               type: number
+ *                               description: Average expense per transaction
+ *                               example: 555.56
+ *                             min:
+ *                               type: number
+ *                               description: Minimum expense amount
+ *                               example: 5.00
+ *                             max:
+ *                               type: number
+ *                               description: Maximum expense amount
+ *                               example: 2000.00
+ *                         net:
+ *                           type: number
+ *                           description: Net amount (income - expense)
+ *                           example: 25000.00
+ *                         totalTransactions:
+ *                           type: number
+ *                           description: Total number of transactions
+ *                           example: 57
+ *                     filters:
+ *                       type: object
+ *                       properties:
+ *                         startDate:
+ *                           type: string
+ *                           format: date-time
+ *                           nullable: true
+ *                         endDate:
+ *                           type: string
+ *                           format: date-time
+ *                           nullable: true
+ *       400:
+ *         description: Validation error (invalid date format or date range)
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 error:
+ *                   type: object
+ *                   properties:
+ *                     code:
+ *                       type: string
+ *                       example: "VALIDATION_ERROR"
+ *                     message:
+ *                       type: string
+ *                       example: "Invalid startDate format. Use ISO 8601 format (YYYY-MM-DD or YYYY-MM-DDTHH:mm:ss.sssZ)"
+ *       401:
+ *         description: Unauthorized - Missing or invalid authentication token
+ *       500:
+ *         description: Internal server error
+ */
+```
+
+#### Bulk Create Transactions Endpoint
+
+```typescript
+/**
+ * @swagger
+ * /api/v1/transactions/bulk:
+ *   post:
+ *     summary: Create multiple transactions at once
+ *     description: Create multiple transactions in a single request. Validates each transaction individually and returns detailed results including successful and failed transactions. Supports partial success (207 Multi-Status).
+ *     tags: [Transactions]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - transactions
+ *             properties:
+ *               transactions:
+ *                 type: array
+ *                 minItems: 1
+ *                 maxItems: 100
+ *                 description: Array of transaction objects to create (1-100 transactions per request)
+ *                 items:
+ *                   type: object
+ *                   required:
+ *                     - type
+ *                     - amount
+ *                     - currency
+ *                     - categoryId
+ *                     - date
+ *                   properties:
+ *                     type:
+ *                       type: string
+ *                       enum: [income, expense]
+ *                     amount:
+ *                       type: number
+ *                       minimum: 0
+ *                       maximum: 999999999.99
+ *                     currency:
+ *                       type: string
+ *                       minLength: 3
+ *                       maxLength: 3
+ *                     categoryId:
+ *                       type: string
+ *                     description:
+ *                       type: string
+ *                       maxLength: 1000
+ *                     date:
+ *                       type: string
+ *                       format: date-time
+ *                     paymentMethod:
+ *                       type: string
+ *                       enum: [cash, card, bank_transfer, digital_wallet, other]
+ *                     tags:
+ *                       type: array
+ *                       maxItems: 20
+ *                       items:
+ *                         type: string
+ *                         maxLength: 50
+ *                     location:
+ *                       type: object
+ *                       properties:
+ *                         latitude:
+ *                           type: number
+ *                           minimum: -90
+ *                           maximum: 90
+ *                         longitude:
+ *                           type: number
+ *                           minimum: -180
+ *                           maximum: 180
+ *                         address:
+ *                           type: string
+ *                     receiptId:
+ *                       type: string
+ *                     isRecurring:
+ *                       type: boolean
+ *                       default: false
+ *                     recurringPattern:
+ *                       type: object
+ *                       properties:
+ *                         frequency:
+ *                           type: string
+ *                           enum: [daily, weekly, monthly, yearly]
+ *                         endDate:
+ *                           type: string
+ *                           format: date-time
+ *                         nextOccurrence:
+ *                           type: string
+ *                           format: date-time
+ *           example:
+ *             transactions:
+ *               - type: "expense"
+ *                 amount: 50.00
+ *                 currency: "USD"
+ *                 categoryId: "507f1f77bcf86cd799439011"
+ *                 description: "Grocery shopping"
+ *                 date: "2024-01-15T10:30:00Z"
+ *                 paymentMethod: "card"
+ *                 tags: ["groceries", "food"]
+ *               - type: "income"
+ *                 amount: 2000.00
+ *                 currency: "USD"
+ *                 categoryId: "507f1f77bcf86cd799439012"
+ *                 description: "Salary"
+ *                 date: "2024-01-01T00:00:00Z"
+ *                 paymentMethod: "bank_transfer"
+ *     responses:
+ *       201:
+ *         description: All transactions created successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: "Successfully created 2 of 2 transaction(s)"
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     created:
+ *                       type: number
+ *                       example: 2
+ *                     failed:
+ *                       type: number
+ *                       example: 0
+ *                     total:
+ *                       type: number
+ *                       example: 2
+ *                     transactions:
+ *                       type: array
+ *                       items:
+ *                         $ref: '#/components/schemas/Transaction'
+ *       207:
+ *         description: Partial success - Some transactions created, some failed (Multi-Status)
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: "Successfully created 1 of 2 transaction(s)"
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     created:
+ *                       type: number
+ *                       example: 1
+ *                     failed:
+ *                       type: number
+ *                       example: 1
+ *                     total:
+ *                       type: number
+ *                       example: 2
+ *                     transactions:
+ *                       type: array
+ *                       items:
+ *                         $ref: '#/components/schemas/Transaction'
+ *                     failures:
+ *                       type: array
+ *                       items:
+ *                         type: object
+ *                         properties:
+ *                           index:
+ *                             type: number
+ *                           error:
+ *                             type: string
+ *       400:
+ *         description: Validation error - All transactions failed validation or request structure invalid
+ *       401:
+ *         description: Unauthorized - Missing or invalid authentication token
+ *       403:
+ *         description: Forbidden - Rate limit exceeded or insufficient permissions
+ *       500:
+ *         description: Internal server error
  */
 ```
 
