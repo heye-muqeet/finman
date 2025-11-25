@@ -20,6 +20,7 @@ import authReducer from './slices/authSlice';
 import userReducer from './slices/userSlice';
 import uiReducer from './slices/uiSlice';
 import categoriesReducer from './slices/categoriesSlice';
+import transactionsReducer from './slices/transactionsSlice';
 
 /**
  * Redux Persist configuration
@@ -42,6 +43,7 @@ const rootReducer = combineReducers({
   user: userReducer,
   ui: uiReducer,
   categories: categoriesReducer,
+  transactions: transactionsReducer,
 });
 
 /**
