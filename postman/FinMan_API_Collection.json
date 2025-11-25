@@ -91,6 +91,24 @@
 				},
 				{
 					"name": "Login User",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    const response = pm.response.json();",
+									"    if (response.data && response.data.token) {",
+									"        pm.environment.set(\"accessToken\", response.data.token);",
+									"        pm.environment.set(\"refreshToken\", response.data.refreshToken || \"\");",
+									"        pm.environment.set(\"userId\", response.data.user._id);",
+									"    }",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
 					"request": {
 						"method": "POST",
 						"header": [
@@ -120,7 +138,7 @@
 								"login"
 							]
 						},
-						"description": "Login with email and password.\n\n**Chunk**: 06 - User Login API Endpoint (To be implemented)\n\n**Rate Limit**: 5 requests per 15 minutes\n\n**Response**: Returns user data and JWT tokens"
+						"description": "Login with email and password.\n\n**Chunk**: 06 - User Login API Endpoint ✅\n\n**Rate Limit**: 5 requests per 15 minutes\n\n**Response**: Returns user data and JWT tokens (accessToken, refreshToken)\n\n**2FA Support**: If user has 2FA enabled, response will include `requires2FA: true` and no token will be returned until 2FA is verified."
 					},
 					"response": []
 				}

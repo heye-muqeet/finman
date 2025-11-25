@@ -80,7 +80,7 @@ This collection is maintained and updated with each development chunk:
 
 - ✅ **Chunk 02** - Database Connection Test endpoint
 - ✅ **Chunk 05** - User Registration endpoint
-- ⏳ **Chunk 06** - User Login endpoint (pending)
+- ✅ **Chunk 06** - User Login endpoint
 - ⏳ Additional endpoints will be added as chunks are completed
 
 ## Updating the Collection

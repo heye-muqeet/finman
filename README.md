@@ -8,6 +8,7 @@ A comprehensive personal financial and expense management system built with Next
 
 - Node.js 18+ installed
 - MongoDB running locally (or MongoDB Atlas account)
+  - **See [MongoDB Setup Guide](Documentation/MONGODB_SETUP.md) for detailed installation instructions**
 - npm or yarn package manager
 
 ### Installation
@@ -29,7 +30,7 @@ cp .env.example .env
 ```
 
 4. Update `.env` with your configuration:
-   - MongoDB connection string
+   - **MongoDB connection string** (⚠️ If you get connection errors, see [MongoDB Setup Guide](Documentation/MONGODB_SETUP.md) or [Quick Start](QUICK_START.md))
    - JWT secret
    - API keys (Gemini, Cloudinary, etc.)
    - Email configuration
@@ -92,6 +93,7 @@ See `.env.example` for all required environment variables.
 Full documentation is available in the `Documentation/` folder:
 - `FINANCIAL_MANAGEMENT_SYSTEM_DOCUMENTATION.md` - Complete system documentation
 - `DEVELOPMENT_PLAN.md` - Development plan and chunk breakdown
+- `MONGODB_SETUP.md` - MongoDB installation and setup guide
 
 ## 🧪 Testing
 
