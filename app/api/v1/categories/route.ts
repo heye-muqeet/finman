@@ -139,6 +139,21 @@ export const POST = withAuth(async (
     );
   } catch (error) {
     // Handle known errors
+    // Check for duplicate category error first (even if it's a ValidationError)
+    if (
+      error instanceof Error &&
+      (error.message.includes('already exists') ||
+        error.message.includes('duplicate'))
+    ) {
+      return errorResponse(
+        {
+          code: 'DUPLICATE_CATEGORY',
+          message: error.message || 'Category with this name and type already exists',
+        },
+        409
+      );
+    }
+
     if (error instanceof ValidationError) {
       return errorResponse(
         {
@@ -157,21 +172,6 @@ export const POST = withAuth(async (
           message: error.message,
         },
         403
-      );
-    }
-
-    // Handle duplicate category error
-    if (
-      error instanceof Error &&
-      (error.message.includes('already exists') ||
-        error.message.includes('duplicate'))
-    ) {
-      return errorResponse(
-        {
-          code: 'DUPLICATE_CATEGORY',
-          message: error.message || 'Category with this name and type already exists',
-        },
-        409
       );
     }
 

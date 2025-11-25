@@ -273,12 +273,15 @@ export async function updateCategory(
     if (input.type !== undefined) {
       category.type = input.type;
     }
+    // Handle icon: null clears the field, string sets it, undefined skips
     if (input.icon !== undefined) {
-      category.icon = input.icon?.trim();
+      category.icon = input.icon !== null ? input.icon.trim() : null;
     }
+    // Handle color: null clears the field, string sets it, undefined skips
     if (input.color !== undefined) {
-      category.color = input.color?.trim();
+      category.color = input.color !== null ? input.color.trim() : null;
     }
+    // Handle parentCategoryId: null clears the field, string sets it, undefined skips
     if (input.parentCategoryId !== undefined) {
       category.parentCategoryId = input.parentCategoryId
         ? new Types.ObjectId(input.parentCategoryId)

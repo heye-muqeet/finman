@@ -57,9 +57,9 @@ export interface CategoryCreateInput {
 export interface CategoryUpdateInput {
   name?: string;
   type?: CategoryType;
-  icon?: string;
-  color?: string;
-  parentCategoryId?: string;
+  icon?: string | null;
+  color?: string | null;
+  parentCategoryId?: string | null;
   isDefault?: boolean;
 }
 

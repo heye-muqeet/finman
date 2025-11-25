@@ -164,26 +164,27 @@ export const PUT = withAuth(async (
 
     const validatedData = validationResult.data;
 
-    // Convert null values to undefined for service layer compatibility
+    // Build update data, preserving null values to allow clearing fields
     const updateData: {
       name?: string;
       type?: 'income' | 'expense' | 'both';
-      icon?: string;
-      color?: string;
-      parentCategoryId?: string;
+      icon?: string | null;
+      color?: string | null;
+      parentCategoryId?: string | null;
       isDefault?: boolean;
     } = {};
 
     if (validatedData.name !== undefined) updateData.name = validatedData.name;
     if (validatedData.type !== undefined) updateData.type = validatedData.type;
+    // Preserve null values to allow clearing fields
     if (validatedData.icon !== undefined) {
-      updateData.icon = validatedData.icon ?? undefined;
+      updateData.icon = validatedData.icon;
     }
     if (validatedData.color !== undefined) {
-      updateData.color = validatedData.color ?? undefined;
+      updateData.color = validatedData.color;
     }
     if (validatedData.parentCategoryId !== undefined) {
-      updateData.parentCategoryId = validatedData.parentCategoryId ?? undefined;
+      updateData.parentCategoryId = validatedData.parentCategoryId;
     }
     if (validatedData.isDefault !== undefined) updateData.isDefault = validatedData.isDefault;
 
@@ -219,18 +220,8 @@ export const PUT = withAuth(async (
       );
     }
 
-    if (error instanceof ValidationError) {
-      return errorResponse(
-        {
-          code: 'VALIDATION_ERROR',
-          message: error.message,
-          details: error.details,
-        },
-        400
-      );
-    }
-
-    // Handle duplicate category error
+    // Check for duplicate category error before general ValidationError handler
+    // (duplicate errors are thrown as ValidationError but should return 409)
     if (
       error instanceof Error &&
       (error.message.includes('already exists') ||
@@ -242,6 +233,17 @@ export const PUT = withAuth(async (
           message: error.message || 'Category with this name and type already exists',
         },
         409
+      );
+    }
+
+    if (error instanceof ValidationError) {
+      return errorResponse(
+        {
+          code: 'VALIDATION_ERROR',
+          message: error.message,
+          details: error.details,
+        },
+        400
       );
     }
 
