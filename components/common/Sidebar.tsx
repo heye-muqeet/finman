@@ -20,6 +20,7 @@ import {
   Receipt,
   Settings,
   X,
+  Tag,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
@@ -32,6 +33,7 @@ interface NavItem {
 const navItems: NavItem[] = [
   { label: 'Dashboard', href: '/dashboard', icon: <LayoutDashboard className="h-5 w-5" /> },
   { label: 'Transactions', href: '/transactions', icon: <Wallet className="h-5 w-5" /> },
+  { label: 'Categories', href: '/categories', icon: <Tag className="h-5 w-5" /> },
   { label: 'Budgets', href: '/budgets', icon: <Target className="h-5 w-5" /> },
   { label: 'Goals', href: '/goals', icon: <TrendingUp className="h-5 w-5" /> },
   { label: 'Reports', href: '/reports', icon: <FileText className="h-5 w-5" /> },

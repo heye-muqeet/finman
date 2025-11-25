@@ -28,7 +28,10 @@ export const createCategorySchema = z.object({
   color: z
     .string()
     .trim()
-    .regex(/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/, 'Color must be a valid hex color code (e.g., #FF5733 or #F73)')
+    .refine(
+      (val) => !val || /^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/.test(val),
+      'Color must be a valid hex color code (e.g., #FF5733 or #F73)'
+    )
     .optional(),
   parentCategoryId: z
     .string()
@@ -57,7 +60,10 @@ export const updateCategorySchema = z.object({
   color: z
     .string()
     .trim()
-    .regex(/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/, 'Color must be a valid hex color code (e.g., #FF5733 or #F73)')
+    .refine(
+      (val) => !val || val === null || /^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/.test(val),
+      'Color must be a valid hex color code (e.g., #FF5733 or #F73)'
+    )
     .optional()
     .nullable(),
   parentCategoryId: z

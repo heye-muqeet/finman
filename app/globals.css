@@ -18,6 +18,8 @@
   --border: #e5e5e5;
   --input: #e5e5e5;
   --ring: #171717;
+  --popover: #ffffff;
+  --popover-foreground: #171717;
   --radius: 0.5rem;
 }
 
@@ -39,6 +41,8 @@
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
   --radius: var(--radius);
   --radius-sm: 0.125rem;
   --radius-base: 0.25rem;
@@ -68,10 +72,12 @@
     --accent-foreground: #ededed;
     --destructive: #dc2626;
     --destructive-foreground: #ededed;
-    --border: #262626;
-    --input: #262626;
-    --ring: #d4d4d4;
-    --radius: 0.5rem;
+  --border: #262626;
+  --input: #262626;
+  --ring: #d4d4d4;
+  --popover: #171717;
+  --popover-foreground: #ededed;
+  --radius: 0.5rem;
   }
 }
 
@@ -79,4 +85,56 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
+}
+
+/* Custom Scrollbar Styles */
+/* Webkit browsers (Chrome, Safari, Edge) */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--muted-foreground);
+  border-radius: 4px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--foreground);
+  background-clip: padding-box;
+}
+
+/* Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--muted-foreground) transparent;
+}
+
+/* Custom scrollable area class for dialogs and modals */
+.scrollable-area {
+  scrollbar-width: thin;
+  scrollbar-color: var(--muted-foreground) transparent;
+}
+
+.scrollable-area::-webkit-scrollbar {
+  width: 6px;
+}
+
+.scrollable-area::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.scrollable-area::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 3px;
+}
+
+.scrollable-area::-webkit-scrollbar-thumb:hover {
+  background: var(--muted-foreground);
 }
