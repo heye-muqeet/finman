@@ -3,7 +3,7 @@
  * Test script to verify Winston logger is working correctly
  */
 
-import { loggerService } from '../lib/services/logger.service';
+import { loggerService } from '@/lib/services/logger.service';
 
 console.log('Testing Winston Logger Service...\n');
 

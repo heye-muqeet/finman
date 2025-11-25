@@ -20,16 +20,16 @@ Total estimated chunks: 85
 - `.env.example` - Environment variables template ✅
 - `.gitignore` - Git ignore rules ✅
 - `README.md` - Project documentation ✅
-- `app/layout.tsx` - Root layout ✅ (Note: Using `app/` instead of `src/app/`)
-- `app/page.tsx` - Home page ✅
-- `lib/config/` - Configuration directory structure ✅
-- `lib/utils/` - Utility functions directory ✅
+- `src/app/layout.tsx` - Root layout ✅
+- `src/app/page.tsx` - Home page ✅
+- `src/lib/config/` - Configuration directory structure ✅
+- `src/lib/utils/` - Utility functions directory ✅
 
 **Verification steps**:
 • Run: `npm install` ✅
 • Run: `npm run build` ✅ (TypeScript compilation succeeds)
-• Check: Tailwind CSS is working ✅ (verified in app/page.tsx with styled divs)
-• Note: Project structure uses `app/` directory directly (Next.js 13+ supports both `app/` and `src/app/`)
+• Check: Tailwind CSS is working ✅ (verified in src/app/page.tsx with styled divs)
+• Note: Project structure uses `src/app/` directory (Next.js 13+ supports both `app/` and `src/app/`)
 
 ---
 
@@ -37,11 +37,11 @@ Total estimated chunks: 85
 **Description**: Configure MongoDB connection, create Mongoose connection utility, and set up database configuration.
 
 **Files/Folders to create/modify**:
-- `lib/config/database.ts` - MongoDB connection configuration ✅
-- `lib/database/connection.ts` - Mongoose connection utility ✅
+- `src/lib/config/database.ts` - MongoDB connection configuration ✅
+- `src/lib/database/connection.ts` - Mongoose connection utility ✅
 - `.env.example` - MONGODB_URI already configured ✅
-- `lib/utils/error-handler.ts` - Error handling utilities ✅ (already exists from Chunk 01)
-- `app/api/v1/test/db/route.ts` - Test endpoint for database connection ✅
+- `src/lib/utils/error-handler.ts` - Error handling utilities ✅ (already exists from Chunk 01)
+- `src/app/api/v1/test/db/route.ts` - Test endpoint for database connection ✅
 
 **Verification steps**:
 • Run: `npm install mongoose` ✅
@@ -56,9 +56,9 @@ Total estimated chunks: 85
 **Description**: Create User Mongoose model with all required fields, indexes, and validation.
 
 **Files/Folders to create/modify**:
-- `models/User.ts` - User Mongoose schema and model ✅ (Note: Using `models/` instead of `src/models/`)
-- `types/user.types.ts` - User TypeScript types ✅ (Note: Using `types/` instead of `src/types/`)
-- `lib/config/database.ts` - Indexes are automatically created by Mongoose when model is used ✅
+- `src/models/User.ts` - User Mongoose schema and model ✅
+- `src/types/user.types.ts` - User TypeScript types ✅
+- `src/lib/config/database.ts` - Indexes are automatically created by Mongoose when model is used ✅
 
 **Verification steps**:
 • Run: `npm run build` ✅ (TypeScript compilation succeeds)
@@ -73,9 +73,9 @@ Total estimated chunks: 85
 **Description**: Implement authentication service with password hashing, JWT token generation/verification, and auth utilities.
 
 **Files/Folders to create/modify**:
-- `lib/services/auth.service.ts` - Authentication service ✅ (Note: Using `lib/` instead of `src/lib/`)
-- `lib/utils/jwt.ts` - JWT token utilities ✅
-- `lib/utils/password.ts` - Password hashing utilities ✅
+- `src/lib/services/auth.service.ts` - Authentication service ✅
+- `src/lib/utils/jwt.ts` - JWT token utilities ✅
+- `src/lib/utils/password.ts` - Password hashing utilities ✅
 - `.env.example` - JWT_SECRET already configured ✅
 
 **Verification steps**:
@@ -94,9 +94,9 @@ Total estimated chunks: 85
 **Description**: Create user registration API route with validation, password hashing, and user creation.
 
 **Files/Folders to create/modify**:
-- `app/api/v1/auth/register/route.ts` - Registration endpoint ✅
-- `lib/validators/auth.validator.ts` - Registration validation schema (Zod) ✅
-- `lib/middleware/rate-limit.ts` - Rate limiting (basic) ✅
+- `src/app/api/v1/auth/register/route.ts` - Registration endpoint ✅
+- `src/lib/validators/auth.validator.ts` - Registration validation schema (Zod) ✅
+- `src/lib/middleware/rate-limit.ts` - Rate limiting (basic) ✅
 
 **Verification steps**:
 • Run: `npm run build` ✅ (TypeScript compilation succeeds)
@@ -112,8 +112,8 @@ Total estimated chunks: 85
 **Description**: Create login API route with credential validation and JWT token response.
 
 **Files/Folders to create/modify**:
-- `app/api/v1/auth/login/route.ts` - Login endpoint ✅
-- `lib/validators/auth.validator.ts` - Login validation schema ✅ (already exists from Chunk 05)
+- `src/app/api/v1/auth/login/route.ts` - Login endpoint ✅
+- `src/lib/validators/auth.validator.ts` - Login validation schema ✅ (already exists from Chunk 05)
 - Auth service login method ✅ (already exists from Chunk 04)
 
 **Verification steps**:
@@ -130,9 +130,9 @@ Total estimated chunks: 85
 **Description**: Create authentication middleware to verify JWT tokens and protect API routes.
 
 **Files/Folders to create/modify**:
-- `lib/middleware/auth.middleware.ts` - JWT verification middleware ✅
-- `lib/utils/auth.ts` - Auth utility functions ✅
-- `app/api/v1/test-protected/route.ts` - Test protected route ✅
+- `src/lib/middleware/auth.middleware.ts` - JWT verification middleware ✅
+- `src/lib/utils/auth.ts` - Auth utility functions ✅
+- `src/app/api/v1/test-protected/route.ts` - Test protected route ✅
 
 **Verification steps**:
 • Run: `npm run build` ✅ (TypeScript compilation succeeds)
@@ -148,14 +148,14 @@ Total estimated chunks: 85
 **Description**: Configure Redux store with Redux Toolkit, Redux Persist, and initial slices including authentication slice needed for login functionality.
 
 **Files/Folders to create/modify**:
-- `lib/store/index.ts` - Redux store configuration ✅
-- `lib/store/slices/userSlice.ts` - User state slice ✅
-- `lib/store/slices/uiSlice.ts` - UI state slice ✅
-- `lib/store/slices/authSlice.ts` - Authentication state slice with login/logout actions/thunks ✅
-- `lib/store/hooks.ts` - Typed Redux hooks ✅
-- `app/providers/ReduxProvider.tsx` - Redux provider component ✅
-- `app/layout.tsx` - Updated to include ReduxProvider ✅
-- `app/test-redux/page.tsx` - Test page for Redux store verification ✅
+- `src/lib/store/index.ts` - Redux store configuration ✅
+- `src/lib/store/slices/userSlice.ts` - User state slice ✅
+- `src/lib/store/slices/uiSlice.ts` - UI state slice ✅
+- `src/lib/store/slices/authSlice.ts` - Authentication state slice with login/logout actions/thunks ✅
+- `src/lib/store/hooks.ts` - Typed Redux hooks ✅
+- `src/app/providers/ReduxProvider.tsx` - Redux provider component ✅
+- `src/app/layout.tsx` - Updated to include ReduxProvider ✅
+- `src/app/test-redux/page.tsx` - Test page for Redux store verification ✅
 
 **Verification steps**:
 • Run: `npm run build` ✅ (TypeScript compilation succeeds)
@@ -173,13 +173,13 @@ Total estimated chunks: 85
 **Description**: Create login page with Radix UI components, form validation, and Redux integration using the authSlice created in Chunk 08.
 
 **Files/Folders to create/modify**:
-- `app/(auth)/login/page.tsx` - Login page ✅
-- `components/ui/button.tsx` - Button component (Radix styled) ✅
-- `components/ui/input.tsx` - Input component (Radix styled) ✅
-- `components/ui/label.tsx` - Label component (Radix) ✅
-- `components/ui/card.tsx` - Card component (Radix styled) ✅
-- `app/globals.css` - Updated with CSS variables for UI components ✅
-- `app/(dashboard)/dashboard/page.tsx` - Temporary dashboard page for redirect ✅
+- `src/app/(auth)/login/page.tsx` - Login page ✅
+- `src/components/ui/button.tsx` - Button component (Radix styled) ✅
+- `src/components/ui/input.tsx` - Input component (Radix styled) ✅
+- `src/components/ui/label.tsx` - Label component (Radix) ✅
+- `src/components/ui/card.tsx` - Card component (Radix styled) ✅
+- `src/app/globals.css` - Updated with CSS variables for UI components ✅
+- `src/app/(dashboard)/dashboard/page.tsx` - Temporary dashboard page for redirect ✅
 - Note: Uses `authSlice.ts` created in Chunk 08 ✅
 
 **Verification steps**:
@@ -197,8 +197,8 @@ Total estimated chunks: 85
 **Description**: Create registration page with form validation and user creation.
 
 **Files/Folders to create/modify**:
-- `app/(auth)/register/page.tsx` - Registration page ✅
-- `components/ui/alert.tsx` - Alert component (styled) ✅
+- `src/app/(auth)/register/page.tsx` - Registration page ✅
+- `src/components/ui/alert.tsx` - Alert component (styled) ✅
 - Note: `registerUser` thunk already exists in authSlice (from Chunk 08) ✅
 
 **Verification steps**:
@@ -216,11 +216,11 @@ Total estimated chunks: 85
 **Description**: Create dashboard layout with navigation, header, sidebar, and protected route wrapper.
 
 **Files/Folders to create/modify**:
-- `app/(dashboard)/layout.tsx` - Dashboard layout ✅
-- `components/common/Header.tsx` - Header component ✅
-- `components/common/Sidebar.tsx` - Sidebar navigation ✅
-- `components/common/ProtectedRoute.tsx` - Route protection wrapper ✅
-- `app/(dashboard)/dashboard/page.tsx` - Dashboard page ✅
+- `src/app/(dashboard)/layout.tsx` - Dashboard layout ✅
+- `src/components/common/Header.tsx` - Header component ✅
+- `src/components/common/Sidebar.tsx` - Sidebar navigation ✅
+- `src/components/common/ProtectedRoute.tsx` - Route protection wrapper ✅
+- `src/app/(dashboard)/dashboard/page.tsx` - Dashboard page ✅
 - Note: Route guard middleware handled by ProtectedRoute component (client-side) ✅
 
 **Verification steps**:
@@ -238,8 +238,8 @@ Total estimated chunks: 85
 **Description**: Configure Winston logger with daily rotation, log levels, and structured logging.
 
 **Files/Folders to create/modify**:
-- `lib/services/logger.service.ts` - Winston logger service ✅
-- `lib/config/logger.config.ts` - Logger configuration ✅
+- `src/lib/services/logger.service.ts` - Winston logger service ✅
+- `src/lib/config/logger.config.ts` - Logger configuration ✅
 - `logs/` - Logs directory ✅
 - `.env.example` - LOG_LEVEL already added ✅
 
@@ -259,8 +259,8 @@ Total estimated chunks: 85
 **Description**: Create Category Mongoose model with validation and indexes.
 
 **Files/Folders to create/modify**:
-- `models/Category.ts` - Category schema and model ✅
-- `types/category.types.ts` - Category TypeScript types ✅
+- `src/models/Category.ts` - Category schema and model ✅
+- `src/types/category.types.ts` - Category TypeScript types ✅
 
 **Verification steps**:
 • Test: Create category document ✅ (Schema validated with required fields: userId, name, type)
@@ -274,7 +274,7 @@ Total estimated chunks: 85
 **Description**: Implement category service with CRUD operations and business logic.
 
 **Files/Folders to create/modify**:
-- `lib/services/categories.service.ts` - Category service ✅
+- `src/lib/services/categories.service.ts` - Category service ✅
 - Logger service integration ✅ (Integrated loggerService.logDatabase and loggerService.logUserAction)
 
 **Verification steps**:
@@ -291,9 +291,9 @@ Total estimated chunks: 85
 **Description**: Create category API routes for all CRUD operations with authentication.
 
 **Files/Folders to create/modify**:
-- `app/api/v1/categories/route.ts` - GET (list), POST (create) ✅
-- `app/api/v1/categories/[id]/route.ts` - GET, PUT, DELETE ✅
-- `lib/validators/category.validator.ts` - Category validation ✅
+- `src/app/api/v1/categories/route.ts` - GET (list), POST (create) ✅
+- `src/app/api/v1/categories/[id]/route.ts` - GET, PUT, DELETE ✅
+- `src/lib/validators/category.validator.ts` - Category validation ✅
 
 **Verification steps**:
 • Run: `npm run dev` ✅ (Build successful, all routes compiled)
@@ -310,7 +310,7 @@ Total estimated chunks: 85
 **Description**: Create Redux slice for categories with async thunks for API calls.
 
 **Files/Folders to create/modify**:
-- `lib/store/slices/categoriesSlice.ts` - Category Redux slice ✅
+- `src/lib/store/slices/categoriesSlice.ts` - Category Redux slice ✅
 - Update Redux store configuration ✅
 
 **Verification steps**:
@@ -326,12 +326,12 @@ Total estimated chunks: 85
 **Description**: Create category management page with list view and create form using Radix UI.
 
 **Files/Folders to create/modify**:
-- `app/(dashboard)/categories/page.tsx` - Categories page ✅
-- `components/categories/CategoryList.tsx` - Category list component ✅
-- `components/categories/CategoryForm.tsx` - Category form component ✅
-- `components/ui/select.tsx` - Select component (Radix) ✅
-- `components/ui/dialog.tsx` - Dialog component (Radix) ✅
-- `components/ui/alert-dialog.tsx` - Alert Dialog component (Radix) ✅
+- `src/app/(dashboard)/categories/page.tsx` - Categories page ✅
+- `src/components/categories/CategoryList.tsx` - Category list component ✅
+- `src/components/categories/CategoryForm.tsx` - Category form component ✅
+- `src/components/ui/select.tsx` - Select component (Radix) ✅
+- `src/components/ui/dialog.tsx` - Dialog component (Radix) ✅
+- `src/components/ui/alert-dialog.tsx` - Alert Dialog component (Radix) ✅
 
 **Verification steps**:
 • Run: `npm run dev` ✅ (Build successful, all components compiled)
@@ -348,8 +348,8 @@ Total estimated chunks: 85
 **Description**: Create Transaction Mongoose model with all fields, relationships, and indexes.
 
 **Files/Folders to create/modify**:
-- `models/Transaction.ts` - Transaction schema and model ✅
-- `types/transaction.types.ts` - Transaction TypeScript types ✅
+- `src/models/Transaction.ts` - Transaction schema and model ✅
+- `src/types/transaction.types.ts` - Transaction TypeScript types ✅
 
 **Verification steps**:
 • Test: Create transaction document ✅ (Model created with all fields: userId, type, amount, currency, categoryId, date, plus optional fields)
@@ -367,7 +367,7 @@ Total estimated chunks: 85
 **Description**: Implement transaction service with CRUD operations, filtering, business logic, statistics, recurring transaction helpers, and WebSocket event hooks.
 
 **Files/Folders to create/modify**:
-- `lib/services/transactions.service.ts` - Transaction service (with getUserStats, recurring helpers, WebSocket hooks) ✅
+- `src/lib/services/transactions.service.ts` - Transaction service (with getUserStats, recurring helpers, WebSocket hooks) ✅
 - `scripts/test-transaction-service.ts` - Test script ✅
 
 **Verification steps**:
@@ -389,9 +389,9 @@ Total estimated chunks: 85
 **Description**: Create transaction API routes with authentication, validation, and pagination.
 
 **Files/Folders to create/modify**:
-- `app/api/v1/transactions/route.ts` - GET (list), POST (create) ✅
-- `app/api/v1/transactions/[id]/route.ts` - GET, PUT, DELETE ✅
-- `lib/validators/transaction.validator.ts` - Transaction validation ✅
+- `src/app/api/v1/transactions/route.ts` - GET (list), POST (create) ✅
+- `src/app/api/v1/transactions/[id]/route.ts` - GET, PUT, DELETE ✅
+- `src/lib/validators/transaction.validator.ts` - Transaction validation ✅
 
 **Verification steps**:
 • Run: `npm run dev` ✅
@@ -409,8 +409,8 @@ Total estimated chunks: 85
 **Description**: Create Redux slice for transactions with async thunks and state management.
 
 **Files/Folders to create/modify**:
-- `lib/store/slices/transactionsSlice.ts` - Transaction Redux slice
-- `lib/store/index.ts` - Update store configuration to include transactions slice
+- `src/lib/store/slices/transactionsSlice.ts` - Transaction Redux slice
+- `src/lib/store/index.ts` - Update store configuration to include transactions slice
 
 **Verification steps**:
 • Test: Dispatch fetchTransactions action
@@ -1279,8 +1279,8 @@ Total estimated chunks: 85
 **Description**: Set up Socket.IO for real-time updates.
 
 **Files/Folders to create/modify**:
-- `lib/services/websocket.service.ts` - WebSocket service
-- `app/api/socket/route.ts` - Socket.IO route handler
+- `src/lib/services/websocket.service.ts` - WebSocket service
+- `src/app/api/socket/route.ts` - Socket.IO route handler
 - WebSocket configuration
 - Update transaction service to enable WebSocket events (hooks already prepared in Chunk 19)
 
@@ -1314,9 +1314,9 @@ Total estimated chunks: 85
 **Description**: Set up background job processing for scheduled tasks.
 
 **Files/Folders to create/modify**:
-- `lib/services/scheduler.service.ts` - Scheduler service
-- `lib/jobs/recurring-transactions.job.ts` - Recurring transactions job (uses helpers from Chunk 19)
-- `lib/jobs/email-summaries.job.ts` - Email summaries job
+- `src/lib/services/scheduler.service.ts` - Scheduler service
+- `src/lib/jobs/recurring-transactions.job.ts` - Recurring transactions job (uses helpers from Chunk 19)
+- `src/lib/jobs/email-summaries.job.ts` - Email summaries job
 - Cron job configuration
 
 **Verification steps**:

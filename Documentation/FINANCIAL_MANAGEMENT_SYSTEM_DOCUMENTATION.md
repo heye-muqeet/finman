@@ -46,11 +46,11 @@
 
 ### Framework Note
 This documentation uses **Next.js 14+ with TypeScript** for both backend (API routes) and frontend (React Server Components and Client Components). All code examples should be implemented using Next.js patterns:
-- **API Routes**: Use `app/api/*/route.ts` files instead of NestJS controllers
-- **Services**: Create service files in `lib/services/` directory
-- **Middleware**: Use `middleware.ts` for request interception
+- **API Routes**: Use `src/app/api/*/route.ts` files instead of NestJS controllers
+- **Services**: Create service files in `src/lib/services/` directory
+- **Middleware**: Use `src/lib/middleware.ts` for request interception
 - **Authentication**: Use NextAuth.js or JWT with API routes
-- **Database**: Use Mongoose models in `lib/models/` directory
+- **Database**: Use Mongoose models in `src/models/` directory
 
 ### Core Capabilities
 - **Income Management**: Track multiple income sources
@@ -204,22 +204,9 @@ finman/
 │   │   └── seeds/                 # Database seeds
 │   └── views/                     # Frontend views (if using server-side rendering)
 ├── public/                        # Static assets
-├── frontend/                      # Frontend application
-│   ├── src/
-│   │   ├── app/
-│   │   │   ├── components/        # React/Vue components
-│   │   │   ├── pages/            # Page components
-│   │   │   ├── services/         # API services
-│   │   │   ├── store/            # State management
-│   │   │   ├── hooks/            # Custom hooks
-│   │   │   │   ├── useCurrency.ts
-│   │   │   │   └── useDateTime.ts
-│   │   │   ├── i18n/             # Translation files
-│   │   │   │   └── locales/
-│   │   │   └── utils/            # Utilities
-│   │   ├── assets/
-│   │   └── styles/
-│   └── package.json
+├── scripts/                       # Utility scripts
+│   ├── test-*.ts                  # Test scripts
+│   └── seed-*.ts                  # Seeding scripts
 ├── .env.example
 ├── .gitignore
 ├── package.json
