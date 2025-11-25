@@ -344,18 +344,22 @@ Total estimated chunks: 85
 
 ---
 
-### 18. Chunk 18 – Transaction Model and Schema
+### 18. Chunk 18 – Transaction Model and Schema ✅ COMPLETE
 **Description**: Create Transaction Mongoose model with all fields, relationships, and indexes.
 
 **Files/Folders to create/modify**:
-- `src/models/Transaction.ts` - Transaction schema and model
-- `src/types/transaction.types.ts` - Transaction TypeScript types
+- `models/Transaction.ts` - Transaction schema and model ✅
+- `types/transaction.types.ts` - Transaction TypeScript types ✅
 
 **Verification steps**:
-• Test: Create transaction document
-• Verify: All indexes created
-• Expected: Model validates required fields
-• Check: Relationships with User and Category work
+• Test: Create transaction document ✅ (Model created with all fields: userId, type, amount, currency, categoryId, date, plus optional fields)
+• Verify: All indexes created ✅ (10 indexes: userId+date, userId+type+date, userId+categoryId+date, userId+amount, userId+tags, userId+paymentMethod, userId+date+amount, text index on description+tags, userId+isRecurring+recurringPattern.nextOccurrence, receiptId)
+• Expected: Model validates required fields ✅ (Type enum, amount >= 0, currency 3 chars, categoryId ObjectId, date required; all with proper error messages)
+• Check: Relationships with User and Category work ✅ (Virtuals for category, user, receipt; proper refs to User, Category, Receipt models)
+• Verify: Static methods implemented ✅ (findByUser with filters/pagination/sorting, getUserStats with aggregation)
+• Verify: Instance methods implemented ✅ (isOverdue for recurring transactions)
+• Verify: Sub-schemas created ✅ (LocationSchema with lat/lng validation, RecurringPatternSchema with frequency enum)
+• Verify: TypeScript types complete ✅ (All enums, interfaces, input/output types, filter/query types)
 
 ---
 

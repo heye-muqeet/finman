@@ -150,7 +150,7 @@ export default function CategoryForm({
         <Label>Icon (Optional)</Label>
         <IconPicker
           value={watch('icon') || undefined}
-          onChange={(icon) => setValue('icon', icon || '', { shouldValidate: true })}
+          onChange={(icon) => setValue('icon', icon ?? undefined, { shouldValidate: true })}
         />
         {errors.icon && (
           <p className="text-sm text-destructive">{errors.icon.message}</p>
@@ -162,7 +162,7 @@ export default function CategoryForm({
         <Label>Color (Optional)</Label>
         <ColorPicker
           value={watch('color') || undefined}
-          onChange={(color) => setValue('color', color || '', { shouldValidate: true })}
+          onChange={(color) => setValue('color', color ?? undefined, { shouldValidate: true })}
         />
         {errors.color && (
           <p className="text-sm text-destructive">{errors.color.message}</p>

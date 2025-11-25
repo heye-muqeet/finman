@@ -21,17 +21,24 @@ export const createCategorySchema = z.object({
     .max(100, 'Category name cannot exceed 100 characters'),
   type: categoryTypeEnum,
   icon: z
-    .string()
-    .trim()
-    .max(50, 'Icon identifier cannot exceed 50 characters')
+    .union([
+      z.string().trim().max(50, 'Icon identifier cannot exceed 50 characters'),
+      z.undefined(),
+    ])
+    .refine((val) => val !== '', 'Icon cannot be an empty string')
     .optional(),
   color: z
-    .string()
-    .trim()
-    .refine(
-      (val) => !val || /^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/.test(val),
-      'Color must be a valid hex color code (e.g., #FF5733 or #F73)'
-    )
+    .union([
+      z
+        .string()
+        .trim()
+        .refine(
+          (val) => /^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/.test(val),
+          'Color must be a valid hex color code (e.g., #FF5733 or #F73)'
+        ),
+      z.undefined(),
+    ])
+    .refine((val) => val !== '', 'Color cannot be an empty string')
     .optional(),
   parentCategoryId: z
     .string()
@@ -51,21 +58,44 @@ export const updateCategorySchema = z.object({
     .max(100, 'Category name cannot exceed 100 characters')
     .optional(),
   type: categoryTypeEnum.optional(),
-  icon: z
-    .string()
-    .trim()
-    .max(50, 'Icon identifier cannot exceed 50 characters')
-    .optional()
-    .nullable(),
-  color: z
-    .string()
-    .trim()
-    .refine(
-      (val) => !val || val === null || /^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/.test(val),
-      'Color must be a valid hex color code (e.g., #FF5733 or #F73)'
-    )
-    .optional()
-    .nullable(),
+  icon: z.preprocess(
+    (val) => {
+      // Convert empty strings to null (to clear the field)
+      // Preserve null and undefined as-is
+      if (val === '') return null;
+      return val;
+    },
+    z
+      .union([
+        z.string().trim().max(50, 'Icon identifier cannot exceed 50 characters'),
+        z.null(),
+        z.undefined(),
+      ])
+      .optional()
+      .nullable()
+  ),
+  color: z.preprocess(
+    (val) => {
+      // Convert empty strings to null (to clear the field)
+      // Preserve null and undefined as-is
+      if (val === '') return null;
+      return val;
+    },
+    z
+      .union([
+        z
+          .string()
+          .trim()
+          .refine(
+            (val) => /^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/.test(val),
+            'Color must be a valid hex color code (e.g., #FF5733 or #F73)'
+          ),
+        z.null(),
+        z.undefined(),
+      ])
+      .optional()
+      .nullable()
+  ),
   parentCategoryId: z
     .string()
     .regex(/^[0-9a-fA-F]{24}$/, 'Parent category ID must be a valid MongoDB ObjectId')
