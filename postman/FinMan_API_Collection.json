@@ -384,6 +384,275 @@
 				}
 			],
 			"description": "Category management endpoints for CRUD operations"
+		},
+		{
+			"name": "Transactions",
+			"item": [
+				{
+					"name": "Get All Transactions",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/transactions?type=expense&page=1&limit=20&sortBy=date&sortOrder=desc",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"transactions"
+							],
+							"query": [
+								{
+									"key": "type",
+									"value": "expense",
+									"description": "Optional: Filter by type - `income` or `expense`"
+								},
+								{
+									"key": "categoryId",
+									"value": "",
+									"description": "Optional: Filter by category ID"
+								},
+								{
+									"key": "minAmount",
+									"value": "",
+									"description": "Optional: Minimum amount filter"
+								},
+								{
+									"key": "maxAmount",
+									"value": "",
+									"description": "Optional: Maximum amount filter"
+								},
+								{
+									"key": "startDate",
+									"value": "",
+									"description": "Optional: Start date (ISO 8601 format)"
+								},
+								{
+									"key": "endDate",
+									"value": "",
+									"description": "Optional: End date (ISO 8601 format)"
+								},
+								{
+									"key": "paymentMethod",
+									"value": "",
+									"description": "Optional: Filter by payment method - `cash`, `card`, `bank_transfer`, `digital_wallet`, `other`"
+								},
+								{
+									"key": "tags",
+									"value": "",
+									"description": "Optional: Comma-separated tags"
+								},
+								{
+									"key": "search",
+									"value": "",
+									"description": "Optional: Text search on description and tags"
+								},
+								{
+									"key": "page",
+									"value": "1",
+									"description": "Optional: Page number (default: 1)"
+								},
+								{
+									"key": "limit",
+									"value": "20",
+									"description": "Optional: Items per page (default: 20, max: 100)"
+								},
+								{
+									"key": "sortBy",
+									"value": "date",
+									"description": "Optional: Sort field - `date`, `amount`, `type`, `createdAt`, `updatedAt` (default: `date`)"
+								},
+								{
+									"key": "sortOrder",
+									"value": "desc",
+									"description": "Optional: Sort order - `asc` or `desc` (default: `desc`)"
+								}
+							]
+						},
+						"description": "Get all transactions for the authenticated user with filters and pagination.\n\n**Chunk**: 20 - Transaction API Endpoints (CRUD) ✅\n\n**Requires Authentication**: Yes (Bearer token)\n\n**Query Parameters**:\n- `type` (optional): Filter by transaction type - `income` or `expense`\n- `categoryId` (optional): Filter by category ID\n- `minAmount` (optional): Minimum amount filter\n- `maxAmount` (optional): Maximum amount filter\n- `startDate` (optional): Start date (ISO 8601 format)\n- `endDate` (optional): End date (ISO 8601 format)\n- `paymentMethod` (optional): Filter by payment method\n- `tags` (optional): Comma-separated tags\n- `search` (optional): Text search on description and tags\n- `page` (optional): Page number (default: 1)\n- `limit` (optional): Items per page (default: 20, max: 100)\n- `sortBy` (optional): Sort field (default: `date`)\n- `sortOrder` (optional): Sort order - `asc` or `desc` (default: `desc`)\n\n**Response**: Returns list of transactions with pagination metadata"
+					},
+					"response": []
+				},
+				{
+					"name": "Create Transaction",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 201) {",
+									"    const response = pm.response.json();",
+									"    if (response.data && response.data.transaction && response.data.transaction._id) {",
+									"        pm.environment.set(\"transactionId\", response.data.transaction._id);",
+									"    }",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"type\": \"expense\",\n  \"amount\": 50.00,\n  \"currency\": \"USD\",\n  \"categoryId\": \"{{categoryId}}\",\n  \"description\": \"Grocery shopping\",\n  \"date\": \"2024-01-15T10:30:00Z\",\n  \"paymentMethod\": \"card\",\n  \"tags\": [\"groceries\", \"food\"],\n  \"location\": {\n    \"latitude\": 40.7128,\n    \"longitude\": -74.0060,\n    \"address\": \"123 Main St, New York, NY\"\n  },\n  \"isRecurring\": false\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/transactions",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"transactions"
+							]
+						},
+						"description": "Create a new transaction for the authenticated user.\n\n**Chunk**: 20 - Transaction API Endpoints (CRUD) ✅\n\n**Requires Authentication**: Yes (Bearer token)\n\n**Request Body**:\n- `type` (required): Transaction type - `income` or `expense`\n- `amount` (required): Transaction amount (must be > 0, max: 999,999,999.99)\n- `currency` (required): 3-character ISO currency code (e.g., USD, EUR)\n- `categoryId` (required): Category ID (MongoDB ObjectId)\n- `description` (optional): Transaction description (max 1000 characters)\n- `date` (required): Transaction date (ISO 8601 format or Date object)\n- `paymentMethod` (optional): Payment method - `cash`, `card`, `bank_transfer`, `digital_wallet`, `other`\n- `tags` (optional): Array of tags (max 20 tags, each max 50 characters)\n- `location` (optional): Location object with `latitude`, `longitude`, `address`\n- `receiptId` (optional): Receipt ID (MongoDB ObjectId)\n- `isRecurring` (optional): Whether transaction is recurring\n- `recurringPattern` (optional): Recurring pattern object with `frequency`, `endDate`, `nextOccurrence`\n\n**Validation**:\n- Validates category exists and belongs to user\n- Validates category type matches transaction type\n- Validates recurring pattern if isRecurring is true\n\n**Response**: Returns created transaction with 201 status\n\n**Auto-Set Variables**:\n- `transactionId` - Automatically set from the created transaction's `_id` field"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Transaction by ID",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/transactions/{{transactionId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"transactions",
+								"{{transactionId}}"
+							],
+							"variable": [
+								{
+									"key": "transactionId",
+									"value": "",
+									"description": "Transaction ID (MongoDB ObjectId)"
+								}
+							]
+						},
+						"description": "Get a single transaction by ID.\n\n**Chunk**: 20 - Transaction API Endpoints (CRUD) ✅\n\n**Requires Authentication**: Yes (Bearer token)\n\n**Path Parameters**:\n- `id`: Transaction ID (MongoDB ObjectId)\n\n**Response**: Returns transaction details\n\n**Errors**:\n- 404: Transaction not found\n- 403: Transaction does not belong to user"
+					},
+					"response": []
+				},
+				{
+					"name": "Update Transaction",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"amount\": 75.00,\n  \"description\": \"Updated grocery shopping\",\n  \"tags\": [\"groceries\", \"food\", \"updated\"]\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/transactions/{{transactionId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"transactions",
+								"{{transactionId}}"
+							],
+							"variable": [
+								{
+									"key": "transactionId",
+									"value": "",
+									"description": "Transaction ID (MongoDB ObjectId)"
+								}
+							]
+						},
+						"description": "Update a transaction by ID.\n\n**Chunk**: 20 - Transaction API Endpoints (CRUD) ✅\n\n**Requires Authentication**: Yes (Bearer token)\n\n**Path Parameters**:\n- `id`: Transaction ID (MongoDB ObjectId)\n\n**Request Body** (all fields optional):\n- `type`: Transaction type - `income` or `expense`\n- `amount`: Transaction amount (must be > 0)\n- `currency`: 3-character ISO currency code\n- `categoryId`: Category ID (MongoDB ObjectId)\n- `description`: Transaction description (max 1000 characters)\n- `date`: Transaction date (ISO 8601 format)\n- `paymentMethod`: Payment method\n- `tags`: Array of tags\n- `location`: Location object\n- `receiptId`: Receipt ID\n- `isRecurring`: Whether transaction is recurring\n- `recurringPattern`: Recurring pattern object\n\n**Validation**:\n- Validates ownership\n- Validates category if updated\n- Validates recurring pattern if provided\n\n**Response**: Returns updated transaction"
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Transaction",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/transactions/{{transactionId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"transactions",
+								"{{transactionId}}"
+							],
+							"variable": [
+								{
+									"key": "transactionId",
+									"value": "",
+									"description": "Transaction ID (MongoDB ObjectId)"
+								}
+							]
+						},
+						"description": "Delete a transaction by ID.\n\n**Chunk**: 20 - Transaction API Endpoints (CRUD) ✅\n\n**Requires Authentication**: Yes (Bearer token)\n\n**Path Parameters**:\n- `id`: Transaction ID (MongoDB ObjectId)\n\n**Validation**:\n- Validates ownership\n\n**Response**: Returns success message with 200 status\n\n**Errors**:\n- 404: Transaction not found\n- 403: Transaction does not belong to user"
+					},
+					"response": []
+				}
+			],
+			"description": "Transaction management endpoints for CRUD operations"
 		}
 	],
 	"event": [

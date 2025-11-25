@@ -385,22 +385,23 @@ Total estimated chunks: 85
 
 ---
 
-### 20. Chunk 20 – Transaction API Endpoints (CRUD)
+### 20. Chunk 20 – Transaction API Endpoints (CRUD) ✅ COMPLETE
 **Description**: Create transaction API routes with authentication, validation, and pagination.
 
 **Files/Folders to create/modify**:
-- `src/app/api/v1/transactions/route.ts` - GET (list), POST (create)
-- `src/app/api/v1/transactions/[id]/route.ts` - GET, PUT, DELETE
-- `src/lib/validators/transaction.validator.ts` - Transaction validation
+- `app/api/v1/transactions/route.ts` - GET (list), POST (create) ✅
+- `app/api/v1/transactions/[id]/route.ts` - GET, PUT, DELETE ✅
+- `lib/validators/transaction.validator.ts` - Transaction validation ✅
 
 **Verification steps**:
-• Run: `npm run dev`
-• Test: GET /api/v1/transactions?page=1&limit=20
-• Test: POST /api/v1/transactions (creates transaction)
-• Test: PUT /api/v1/transactions/[id] (updates transaction)
-• Test: DELETE /api/v1/transactions/[id] (deletes transaction)
-• Expected: All endpoints work with pagination
-• Verify: Query parameters work (filters, sorting)
+• Run: `npm run dev` ✅
+• Test: GET /api/v1/transactions?page=1&limit=20 ✅ (with all query parameters: type, categoryId, minAmount, maxAmount, startDate, endDate, paymentMethod, tags, search, sortBy, sortOrder)
+• Test: POST /api/v1/transactions (creates transaction) ✅ (with full validation including recurring pattern)
+• Test: PUT /api/v1/transactions/[id] (updates transaction) ✅ (with partial update support, null handling)
+• Test: DELETE /api/v1/transactions/[id] (deletes transaction) ✅ (with ownership validation)
+• Expected: All endpoints work with pagination ✅ (Pagination with page, limit, total, totalPages)
+• Verify: Query parameters work (filters, sorting) ✅ (All filters implemented: type, categoryId, amount range, date range, paymentMethod, tags, search; Sorting with sortBy and sortOrder)
+• Verify: Postman collection updated ✅ (All transaction endpoints added with test scripts)
 
 ---
 
@@ -408,8 +409,8 @@ Total estimated chunks: 85
 **Description**: Create Redux slice for transactions with async thunks and state management.
 
 **Files/Folders to create/modify**:
-- `src/lib/store/slices/transactionsSlice.ts` - Transaction Redux slice
-- Update store configuration
+- `lib/store/slices/transactionsSlice.ts` - Transaction Redux slice
+- `lib/store/index.ts` - Update store configuration to include transactions slice
 
 **Verification steps**:
 • Test: Dispatch fetchTransactions action

@@ -105,14 +105,14 @@ export interface TransactionUpdateInput {
   amount?: number;
   currency?: string;
   categoryId?: string;
-  description?: string;
+  description?: string | null;
   date?: Date;
-  paymentMethod?: PaymentMethod;
-  tags?: string[];
-  location?: TransactionLocation;
-  receiptId?: string;
+  paymentMethod?: PaymentMethod | null;
+  tags?: string[] | null;
+  location?: TransactionLocation | null;
+  receiptId?: string | null;
   isRecurring?: boolean;
-  recurringPattern?: RecurringPattern;
+  recurringPattern?: RecurringPattern | null;
 }
 
 /**
