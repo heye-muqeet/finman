@@ -6,6 +6,7 @@
 'use client';
 
 import ProtectedRoute from '@/components/common/ProtectedRoute';
+import { ErrorBoundary } from '@/components/common/ErrorBoundary';
 import Header from '@/components/common/Header';
 import Sidebar from '@/components/common/Sidebar';
 
@@ -15,19 +16,21 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }) {
   return (
-    <ProtectedRoute>
-      <div className="min-h-screen bg-background">
-        <Header />
-        <div className="flex">
-          <Sidebar />
-          <main className="flex-1 lg:ml-64 min-h-[calc(100vh-4rem)] mt-16">
-            <div className="p-4 lg:p-6">
-              {children}
-            </div>
-          </main>
+    <ErrorBoundary>
+      <ProtectedRoute>
+        <div className="min-h-screen bg-background">
+          <Header />
+          <div className="flex">
+            <Sidebar />
+            <main className="flex-1 lg:ml-64 min-h-[calc(100vh-4rem)] mt-16">
+              <div className="p-4 lg:p-6">
+                {children}
+              </div>
+            </main>
+          </div>
         </div>
-      </div>
-    </ProtectedRoute>
+      </ProtectedRoute>
+    </ErrorBoundary>
   );
 }
 

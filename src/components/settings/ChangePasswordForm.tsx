@@ -14,7 +14,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Loader2, Eye, EyeOff } from 'lucide-react';
+import { Eye, EyeOff } from 'lucide-react';
+import LoadingSpinner from '@/components/common/LoadingSpinner';
 
 interface ChangePasswordFormProps {
   onSubmit: (data: ChangePasswordInput) => Promise<void>;
@@ -247,7 +248,7 @@ export default function ChangePasswordForm({
             >
               {isLoading ? (
                 <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  <LoadingSpinner size="sm" inline className="mr-2" />
                   Changing Password...
                 </>
               ) : (

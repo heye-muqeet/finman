@@ -12,6 +12,7 @@ import { logout } from '@/lib/store/slices/authSlice';
 import { toggleSidebar } from '@/lib/store/slices/uiSlice';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils/cn';
+import { useToast } from '@/hooks/useToast';
 import { Menu, Bell, User, LogOut, Settings, ChevronDown } from 'lucide-react';
 
 export default function Header() {
@@ -19,6 +20,7 @@ export default function Header() {
   const dispatch = useAppDispatch();
   const { user } = useAppSelector((state) => state.auth);
   const { sidebarOpen } = useAppSelector((state) => state.ui);
+  const { error: showErrorToast } = useToast();
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
@@ -41,23 +43,33 @@ export default function Header() {
       if (token) {
         try {
           const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
-          await fetch(`${baseUrl}/api/v1/auth/logout`, {
+          const response = await fetch(`${baseUrl}/api/v1/auth/logout`, {
             method: 'POST',
             headers: {
               'Authorization': `Bearer ${token}`,
               'Content-Type': 'application/json',
             },
           });
+
+          if (!response.ok) {
+            // Log error but don't block logout
+            const errorData = await response.json().catch(() => ({}));
+            console.error('Logout API call failed:', errorData);
+            // Optionally show non-blocking toast notification
+            showErrorToast('Logout API call failed, but you have been logged out locally');
+          }
         } catch (error) {
           // Don't block logout if API call fails
           console.error('Logout API call failed:', error);
+          // Optionally show non-blocking toast notification
+          showErrorToast('Logout API call failed, but you have been logged out locally');
         }
       }
     } catch (error) {
       // Continue with logout even if API call fails
       console.error('Logout error:', error);
     } finally {
-      // Always clear local state and redirect
+      // Always clear local state and redirect (non-blocking)
       dispatch(logout());
       router.push('/login');
     }

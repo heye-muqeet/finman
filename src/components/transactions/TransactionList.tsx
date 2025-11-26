@@ -37,12 +37,12 @@ import {
   ArrowUpDown,
   TrendingUp,
   TrendingDown,
-  Loader2,
   Inbox,
   AlertCircle,
   LayoutGrid,
   List,
 } from 'lucide-react';
+import LoadingSpinner from '@/components/common/LoadingSpinner';
 import type { Transaction } from '@/types/transaction.types';
 // Using native Date formatting instead of date-fns for now
 // Can be replaced with date-fns if package is installed
@@ -260,7 +260,7 @@ export default function TransactionList({
           {/* Loading spinner overlay */}
           {isLoading && (
             <div className="absolute inset-0 flex items-center justify-center bg-background/50 z-10">
-              <Loader2 className="h-6 w-6 animate-spin text-primary" />
+              <LoadingSpinner size="md" />
             </div>
           )}
 

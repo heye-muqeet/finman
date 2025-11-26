@@ -42,7 +42,8 @@ import { Checkbox } from '@/components/ui/checkbox';
 import type { Transaction } from '@/types/transaction.types';
 import type { Category } from '@/types/category.types';
 import { cn } from '@/lib/utils/cn';
-import { Save, X, Loader2 } from 'lucide-react';
+import { Save, X } from 'lucide-react';
+import LoadingSpinner from '@/components/common/LoadingSpinner';
 
 interface TransactionFormProps {
   initialData?: Transaction | null;
@@ -720,7 +721,7 @@ export default function TransactionForm({
             <Button type="submit" disabled={isLoading}>
               {isLoading ? (
                 <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  <LoadingSpinner size="sm" inline className="mr-2" />
                   {isEditMode ? 'Updating...' : 'Creating...'}
                 </>
               ) : (

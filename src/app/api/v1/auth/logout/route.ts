@@ -5,7 +5,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { withAuth } from '@/lib/middleware/auth.middleware';
-import { standardRateLimit } from '@/lib/middleware/rate-limit';
+import { authRateLimit } from '@/lib/middleware/rate-limit';
 import { successResponse, errorResponse } from '@/lib/utils/api-response';
 import { handleError } from '@/lib/utils/error-handler';
 import { connectDB } from '@/lib/database/connection';
@@ -24,8 +24,8 @@ export const POST = withAuth(async (
   { user }
 ) => {
   try {
-    // Apply rate limiting
-    const rateLimitResponse = await standardRateLimit(request);
+    // Apply rate limiting (stricter for auth endpoints)
+    const rateLimitResponse = await authRateLimit(request);
     if (rateLimitResponse) {
       return rateLimitResponse;
     }
