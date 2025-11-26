@@ -9,6 +9,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { withAuth } from '@/lib/middleware/auth.middleware';
 import { successResponse } from '@/lib/utils/api-response';
+import { handleError } from '@/lib/utils/error-handler';
 import { connectDB } from '@/lib/database/connection';
 
 /**
@@ -33,24 +34,13 @@ export const GET = withAuth(async (
           firstName: user.firstName,
           lastName: user.lastName,
         },
-        timestamp: new Date().toISOString(),
       },
       'Protected route accessed successfully',
       200
     );
   } catch (error) {
     console.error('Protected route error:', error);
-    return NextResponse.json(
-      {
-        success: false,
-        error: {
-          code: 'INTERNAL_ERROR',
-          message: 'An unexpected error occurred',
-        },
-        timestamp: new Date().toISOString(),
-      },
-      { status: 500 }
-    );
+    return handleError(error);
   }
 });
 

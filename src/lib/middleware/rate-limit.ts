@@ -5,6 +5,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { appConfig } from '@/lib/config/app.config';
+import { errorResponse } from '@/lib/utils/api-response';
 
 /**
  * Rate limit store (in-memory for now)
@@ -100,26 +101,22 @@ export function rateLimit(config: Partial<RateLimitConfig> = {}) {
     if (entry.count > finalConfig.maxRequests) {
       const retryAfter = Math.ceil((entry.resetTime - now) / 1000);
       
-      return NextResponse.json(
+      const response = errorResponse(
         {
-          success: false,
-          error: {
-            code: 'RATE_LIMIT_EXCEEDED',
-            message: finalConfig.message || 'Too many requests, please try again later',
-            retryAfter,
-          },
-          timestamp: new Date().toISOString(),
+          code: 'RATE_LIMIT_EXCEEDED',
+          message: finalConfig.message || 'Too many requests, please try again later',
+          details: { retryAfter },
         },
-        {
-          status: 429,
-          headers: {
-            'Retry-After': retryAfter.toString(),
-            'X-RateLimit-Limit': finalConfig.maxRequests.toString(),
-            'X-RateLimit-Remaining': '0',
-            'X-RateLimit-Reset': new Date(entry.resetTime).toISOString(),
-          },
-        }
+        429
       );
+      
+      // Add rate limit headers
+      response.headers.set('Retry-After', retryAfter.toString());
+      response.headers.set('X-RateLimit-Limit', finalConfig.maxRequests.toString());
+      response.headers.set('X-RateLimit-Remaining', '0');
+      response.headers.set('X-RateLimit-Reset', new Date(entry.resetTime).toISOString());
+      
+      return response;
     }
 
     // Add rate limit headers

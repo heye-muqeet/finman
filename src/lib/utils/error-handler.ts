@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { errorResponse } from './api-response';
 
 /**
  * Custom error classes for better error handling
@@ -46,34 +47,27 @@ export class ForbiddenError extends AppError {
 
 /**
  * Standardized error response handler
+ * Uses the standardized API response format
  */
 export function handleError(error: unknown): NextResponse {
   if (error instanceof AppError) {
-    return NextResponse.json(
+    return errorResponse(
       {
-        success: false,
-        error: {
-          code: error.code || 'ERROR',
-          message: error.message,
-          details: error.details,
-        },
-        timestamp: new Date().toISOString(),
+        code: error.code || 'ERROR',
+        message: error.message,
+        details: error.details,
       },
-      { status: error.statusCode }
+      error.statusCode
     );
   }
 
   // Unknown error
-  return NextResponse.json(
+  return errorResponse(
     {
-      success: false,
-      error: {
-        code: 'INTERNAL_ERROR',
-        message: 'An unexpected error occurred',
-      },
-      timestamp: new Date().toISOString(),
+      code: 'INTERNAL_ERROR',
+      message: 'An unexpected error occurred',
     },
-    { status: 500 }
+    500
   );
 }
 

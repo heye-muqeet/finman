@@ -12,7 +12,7 @@ import {
   createTransaction,
   getTransactions,
 } from '@/lib/services/transactions.service';
-import { successResponse, errorResponse } from '@/lib/utils/api-response';
+import { successResponse, errorResponse, paginatedResponse } from '@/lib/utils/api-response';
 import { ValidationError, ForbiddenError } from '@/lib/utils/error-handler';
 import { handleError } from '@/lib/utils/error-handler';
 import { connectDB } from '@/lib/database/connection';
@@ -173,18 +173,15 @@ export const GET = withAuth(async (
       sortOrder,
     });
 
-    return successResponse(
+    return paginatedResponse(
+      result.transactions,
       {
-        transactions: result.transactions,
-        pagination: {
-          page: result.page,
-          limit: result.limit,
-          total: result.total,
-          totalPages: result.totalPages,
-        },
+        page: result.page,
+        limit: result.limit,
+        total: result.total,
+        totalPages: result.totalPages,
       },
-      result.message || 'Transactions retrieved successfully',
-      200
+      result.message || 'Transactions retrieved successfully'
     );
   } catch (error) {
     if (error instanceof ValidationError) {
