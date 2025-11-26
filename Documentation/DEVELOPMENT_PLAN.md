@@ -724,18 +724,24 @@ Total estimated chunks: 85
 
 ## PHASE 3: ESSENTIAL FEATURES (Chunks 36-55)
 
-### 36. Chunk 36 – Budget Model and Schema
+### 36. Chunk 36 – Budget Model and Schema ✅ COMPLETE
 **Description**: Create Budget Mongoose model with validation, relationships, and indexes.
 
 **Files/Folders to create/modify**:
-- `src/models/Budget.ts` - Budget schema and model
-- `src/types/budget.types.ts` - Budget TypeScript types
+- `src/models/Budget.ts` - Budget schema and model ✅
+- `src/types/budget.types.ts` - Budget TypeScript types ✅
 
 **Verification steps**:
-• Test: Create budget document
-• Verify: Indexes created
-• Expected: Model validates required fields
-• Check: Relationships with User and Category work
+• Test: Create budget document ✅ (Schema validated with required fields: userId, name, amount, currency, period, startDate)
+• Verify: Indexes created ✅ (6 indexes: userId+isActive, userId+period+startDate, categoryId, userId+startDate+endDate, userId+createdAt, userId+isActive+categoryId)
+• Expected: Model validates required fields ✅ (Required: userId, name, amount, currency, period, startDate; Optional: categoryId, endDate, alertThreshold, description, color, icon; isActive defaults to true)
+• Check: Relationships with User and Category work ✅ (Virtuals for category and user, proper refs to User and Category models)
+• Verify: Date validation works ✅ (endDate must be after startDate if provided)
+• Verify: Amount validation works ✅ (amount must be > 0)
+• Verify: Alert threshold validation works ✅ (alertThreshold must be 0-100 if provided)
+• Verify: Static methods implemented ✅ (findByUser, findActiveBudgets, findByCategory, findByPeriod)
+• Verify: Instance methods implemented ✅ (isCurrentlyActive, getDaysRemaining)
+• Check: TypeScript types are correct ✅ (IBudget, Budget, BudgetPeriod, BudgetCreateInput, BudgetUpdateInput, BudgetResponse, BudgetsListResponse)
 
 ---
 
