@@ -765,6 +765,80 @@
 				}
 			],
 			"description": "Dashboard endpoints for financial overview and summary data\n\n**Chunk 26 - Dashboard Overview with Summary Cards** ✅\nThe Dashboard page uses these endpoints:\n- GET /api/v1/dashboard/summary - For displaying financial overview with summary cards and recent transactions\n\nThe dashboard provides a comprehensive view of user's financial status with real-time data aggregation from transactions."
+		},
+		{
+			"name": "Users",
+			"item": [
+				{
+					"name": "Get User Profile",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/users/profile",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"users",
+								"profile"
+							]
+						},
+						"description": "Get the authenticated user's profile information.\n\n**Chunk**: 27 - User Profile API and Service ✅\n\n**Requires Authentication**: Yes (Bearer token)\n\n**Response**: Returns user profile data including:\n- `_id`: User ID\n- `email`: User email address\n- `firstName`: User's first name (optional)\n- `lastName`: User's last name (optional)\n- `currency`: User's preferred currency (default: USD)\n- `timezone`: User's timezone (default: UTC)\n- `preferences`: User preferences object (theme, notifications, language, etc.)\n- `createdAt`: Account creation date\n- `updatedAt`: Last update date\n\n**Excluded Fields**: Password, 2FA secrets, and backup codes are excluded from response for security.\n\n**Frontend UI**: Profile page available at `/settings/profile` (Chunk 28) will use this endpoint to display user information."
+					},
+					"response": []
+				},
+				{
+					"name": "Update User Profile",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"firstName\": \"John\",\n  \"lastName\": \"Doe\",\n  \"currency\": \"USD\",\n  \"timezone\": \"America/New_York\",\n  \"preferences\": {\n    \"theme\": \"dark\",\n    \"notifications\": true,\n    \"language\": \"en\",\n    \"currency\": \"USD\",\n    \"timezone\": \"America/New_York\",\n    \"dateFormat\": \"YYYY-MM-DD\",\n    \"timeFormat\": \"24h\"\n  }\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/users/profile",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"users",
+								"profile"
+							]
+						},
+						"description": "Update the authenticated user's profile information.\n\n**Chunk**: 27 - User Profile API and Service ✅\n\n**Requires Authentication**: Yes (Bearer token)\n\n**Request Body**: All fields are optional. Only provided fields will be updated.\n- `firstName`: User's first name (string, optional)\n- `lastName`: User's last name (string, optional)\n- `currency`: User's preferred currency (3-letter code, e.g., USD, EUR)\n- `timezone`: User's timezone (string, optional)\n- `preferences`: User preferences object (optional)\n  - `theme`: 'light', 'dark', or 'system' (optional)\n  - `notifications`: Boolean (optional)\n  - `language`: Language code (optional)\n  - `currency`: 3-letter currency code (optional)\n  - `timezone`: Timezone string (optional)\n  - `dateFormat`: Date format string (optional)\n  - `timeFormat`: '12h' or '24h' (optional)\n\n**Restrictions**:\n- `password` cannot be updated through this endpoint (use `/api/v1/auth/change-password`)\n- `email` cannot be updated through this endpoint\n\n**Response**: Returns updated user profile data (same structure as GET endpoint)\n\n**Frontend UI**: Profile page available at `/settings/profile` (Chunk 28) will use this endpoint to update user information."
+					},
+					"response": []
+				}
+			],
+			"description": "User profile management endpoints\n\n**Chunk 27 - User Profile API and Service** ✅\nThe User Profile endpoints provide:\n- GET /api/v1/users/profile - For retrieving current user's profile information\n- PUT /api/v1/users/profile - For updating user profile (firstName, lastName, currency, timezone, preferences)\n\n**Note**: Password updates are handled separately via `/api/v1/auth/change-password` endpoint (Chunk 29)."
 		}
 	],
 	"event": [

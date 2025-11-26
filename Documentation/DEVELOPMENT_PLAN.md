@@ -539,27 +539,32 @@ Total estimated chunks: 85
 **Verification steps**:
 • Run: `npm run dev` ✅
 • Visit: http://localhost:3000/dashboard ✅
+• Test: GET /api/v1/dashboard/summary endpoint ✅ (Returns dashboard summary with totalIncome, totalExpense, balance, thisMonth stats, recentTransactions)
 • Test: Summary cards display correct data ✅ (Total Balance, Total Income, Total Expenses, This Month cards with real data)
 • Expected: Income, expenses, balance calculated correctly ✅ (Uses transaction stats service, calculates balance as income - expense)
 • Verify: Recent transactions display ✅ (Shows last 5 transactions with description, date, amount)
-• Check: Data updates when transactions change ✅ (Fetches fresh data on page load, can be refreshed)
+• Check: Data updates when transactions change ✅ (Fetches fresh data on page load, auto-refresh on visibility/focus)
+• Verify: API endpoint uses authentication ✅ (Protected with withAuth middleware, includes request logging)
+• Verify: Postman collection updated ✅ (Dashboard endpoint added with full documentation)
 
 ---
 
-### 27. Chunk 27 – User Profile API and Service
+### 27. Chunk 27 – User Profile API and Service ✅ COMPLETE
 **Description**: Create user profile endpoints for getting and updating user information.
 
 **Files/Folders to create/modify**:
-- `src/app/api/v1/users/profile/route.ts` - GET, PUT profile
-- `src/lib/services/users.service.ts` - User service
-- `src/lib/validators/user.validator.ts` - User validation
+- `src/app/api/v1/users/profile/route.ts` - GET, PUT profile ✅
+- `src/lib/services/users.service.ts` - User service ✅
+- `src/lib/validators/user.validator.ts` - User validation ✅
 
 **Verification steps**:
-• Test: GET /api/v1/users/profile (returns user data)
-• Test: PUT /api/v1/users/profile (updates user)
-• Expected: Profile updates correctly
-• Verify: Validation works
-• Check: Password update handled separately
+• Test: GET /api/v1/users/profile (returns user data) ✅ (Returns user profile without sensitive fields)
+• Test: PUT /api/v1/users/profile (updates user) ✅ (Updates firstName, lastName, currency, timezone, preferences)
+• Expected: Profile updates correctly ✅ (Only provided fields are updated, preferences are merged)
+• Verify: Validation works ✅ (Zod schema validates all fields, rejects password/email updates)
+• Check: Password update handled separately ✅ (Password updates rejected with error message pointing to change-password endpoint)
+• Verify: API endpoint uses authentication ✅ (Protected with withAuth middleware, includes request logging)
+• Verify: Postman collection updated ✅ (Both GET and PUT endpoints added with full documentation)
 
 ---
 

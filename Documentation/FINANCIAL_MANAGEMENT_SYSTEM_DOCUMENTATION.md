@@ -3872,6 +3872,7 @@ PUT    /api/v1/transactions/:id       # Update transaction
 DELETE /api/v1/transactions/:id       # Delete transaction
 GET    /api/v1/transactions/stats   # Get transaction statistics
 POST   /api/v1/transactions/bulk      # Create multiple transactions
+GET    /api/v1/dashboard/summary      # Get dashboard summary
 GET    /api/transactions/export/csv    # Export transactions (CSV)
 GET    /api/transactions/export/excel  # Export transactions (Excel)
 GET    /api/transactions/export/pdf    # Export transactions (PDF)
@@ -5349,6 +5350,174 @@ export async function GET() {
   return NextResponse.json(swaggerSpec);
 }
 ```
+
+#### Dashboard Summary Endpoint
+
+```typescript
+/**
+ * @swagger
+ * /api/v1/dashboard/summary:
+ *   get:
+ *     summary: Get dashboard summary for authenticated user
+ *     description: Retrieve comprehensive financial overview including total income, expenses, balance, monthly statistics, transaction counts, and recent transactions. This endpoint aggregates data from all user transactions to provide a complete financial snapshot.
+ *     tags: [Dashboard]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Dashboard summary retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: "Dashboard summary retrieved successfully"
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     totalIncome:
+ *                       type: number
+ *                       description: Total income across all time
+ *                       example: 50000.00
+ *                     totalExpense:
+ *                       type: number
+ *                       description: Total expenses across all time
+ *                       example: 25000.00
+ *                     balance:
+ *                       type: number
+ *                       description: Net balance (totalIncome - totalExpense)
+ *                       example: 25000.00
+ *                     currency:
+ *                       type: string
+ *                       description: User's preferred currency
+ *                       example: "USD"
+ *                     thisMonth:
+ *                       type: object
+ *                       description: Monthly statistics for current month
+ *                       properties:
+ *                         income:
+ *                           type: number
+ *                           description: Total income for current month
+ *                           example: 5000.00
+ *                         expense:
+ *                           type: number
+ *                           description: Total expenses for current month
+ *                           example: 2000.00
+ *                         net:
+ *                           type: number
+ *                           description: Net amount for current month (income - expense)
+ *                           example: 3000.00
+ *                     totalTransactions:
+ *                       type: number
+ *                       description: Total number of transactions
+ *                       example: 57
+ *                     incomeCount:
+ *                       type: number
+ *                       description: Number of income transactions
+ *                       example: 12
+ *                     expenseCount:
+ *                       type: number
+ *                       description: Number of expense transactions
+ *                       example: 45
+ *                     recentTransactions:
+ *                       type: array
+ *                       description: Array of last 5 transactions (most recent first)
+ *                       maxItems: 5
+ *                       items:
+ *                         type: object
+ *                         properties:
+ *                           _id:
+ *                             type: string
+ *                             description: Transaction ID
+ *                             example: "507f1f77bcf86cd799439011"
+ *                           type:
+ *                             type: string
+ *                             enum: [income, expense]
+ *                             description: Transaction type
+ *                             example: "expense"
+ *                           amount:
+ *                             type: number
+ *                             description: Transaction amount
+ *                             example: 50.00
+ *                           currency:
+ *                             type: string
+ *                             description: Transaction currency
+ *                             example: "USD"
+ *                           description:
+ *                             type: string
+ *                             nullable: true
+ *                             description: Transaction description
+ *                             example: "Grocery shopping"
+ *                           date:
+ *                             type: string
+ *                             format: date-time
+ *                             description: Transaction date
+ *                             example: "2024-01-15T10:30:00Z"
+ *                           categoryId:
+ *                             type: string
+ *                             description: Category ID
+ *                             example: "507f1f77bcf86cd799439012"
+ *       401:
+ *         description: Unauthorized - Missing or invalid authentication token
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 error:
+ *                   type: object
+ *                   properties:
+ *                     code:
+ *                       type: string
+ *                       example: "UNAUTHORIZED"
+ *                     message:
+ *                       type: string
+ *                       example: "Authentication required"
+ *       429:
+ *         description: Too Many Requests - Rate limit exceeded
+ *       500:
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 error:
+ *                   type: object
+ *                   properties:
+ *                     code:
+ *                       type: string
+ *                       example: "INTERNAL_ERROR"
+ *                     message:
+ *                       type: string
+ *                       example: "Failed to get dashboard summary"
+ */
+```
+
+**Chunk**: 26 - Dashboard Overview with Summary Cards ✅
+
+**Frontend Integration**: The dashboard page (`/dashboard`) uses this endpoint to display:
+- 4 summary cards (Total Balance, Total Income, Total Expenses, This Month)
+- Recent transactions list (last 5)
+- Quick actions section
+- Auto-refresh on page visibility/focus
+
+**Data Updates**: Dashboard automatically refreshes when:
+- Page loads
+- User navigates back to the tab (visibility change)
+- Window gains focus
+- User manually refreshes the page
 
 #### Step 5: Swagger UI Page
 Create `app/docs/page.tsx`:
