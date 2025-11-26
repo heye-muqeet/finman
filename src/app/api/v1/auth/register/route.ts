@@ -12,6 +12,9 @@ import { ValidationError } from '@/lib/utils/error-handler';
 import { handleError } from '@/lib/utils/error-handler';
 import { connectDB } from '@/lib/database/connection';
 import { withRequestLogging } from '@/lib/middleware/request-logger.middleware';
+import { seedDefaultCategories } from '@/lib/services/categories.service';
+import { DEFAULT_CATEGORIES } from '@/lib/constants/default-categories';
+import { loggerService } from '@/lib/services/logger.service';
 
 /**
  * POST /api/v1/auth/register
@@ -61,6 +64,29 @@ export const POST = withRequestLogging(async function POST(request: NextRequest)
       currency: validatedData.currency || 'USD',
       timezone: validatedData.timezone || 'UTC',
     });
+
+    // Seed default categories for new user
+    // Don't fail registration if category seeding fails, but try to complete it
+    try {
+      const seedResult = await seedDefaultCategories(
+        result.user._id.toString(),
+        DEFAULT_CATEGORIES
+      );
+      loggerService.info('Default categories seeded for new user', {
+        userId: result.user._id.toString(),
+        created: seedResult.created,
+        skipped: seedResult.skipped,
+        service: 'registration',
+      });
+    } catch (error) {
+      // Log error but don't throw - registration should still succeed
+      // Categories can be seeded manually later if needed
+      loggerService.warn('Failed to seed default categories for new user', {
+        userId: result.user._id.toString(),
+        error: error instanceof Error ? error.message : 'Unknown error',
+        service: 'registration',
+      });
+    }
 
     // Return success response
     return successResponse(

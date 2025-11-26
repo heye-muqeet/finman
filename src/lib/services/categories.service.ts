@@ -461,3 +461,113 @@ export async function getSubcategories(
   }
 }
 
+/**
+ * Seed default categories for a user
+ * Idempotent: will skip categories that already exist
+ * @param userId - User ID
+ * @param defaultCategories - Array of default category definitions
+ * @returns Summary of seeding operation
+ */
+export async function seedDefaultCategories(
+  userId: string,
+  defaultCategories: Array<{
+    name: string;
+    type: CategoryType;
+    icon?: string;
+    color?: string;
+  }>
+): Promise<{
+  created: number;
+  skipped: number;
+  total: number;
+  createdCategories: CategoryDTO[];
+  skippedCategories: Array<{ name: string; type: CategoryType; icon?: string }>;
+}> {
+  await connectDB();
+
+  try {
+    const createdCategories: CategoryDTO[] = [];
+    const skippedCategories: Array<{ name: string; type: CategoryType; icon?: string }> = [];
+    let created = 0;
+    let skipped = 0;
+
+    // Get existing categories for the user
+    const existingCategories = await Category.find({ userId: new Types.ObjectId(userId) });
+    const existingCategoryMap = new Map<string, boolean>();
+    existingCategories.forEach((cat) => {
+      // Create a unique key: name + type
+      const key = `${cat.name.toLowerCase()}_${cat.type}`;
+      existingCategoryMap.set(key, true);
+    });
+
+    // Process each default category
+    for (const categoryDef of defaultCategories) {
+      const key = `${categoryDef.name.toLowerCase()}_${categoryDef.type}`;
+      
+      // Skip if category already exists
+      if (existingCategoryMap.has(key)) {
+        skipped++;
+        skippedCategories.push({
+          name: categoryDef.name,
+          type: categoryDef.type,
+          icon: categoryDef.icon,
+        });
+        continue;
+      }
+
+      // Create new category
+      try {
+        const newCategory = await Category.create({
+          userId: new Types.ObjectId(userId),
+          name: categoryDef.name,
+          type: categoryDef.type,
+          icon: categoryDef.icon || undefined,
+          color: categoryDef.color || undefined,
+          isDefault: true,
+        });
+
+        createdCategories.push(toCategoryObject(newCategory));
+        created++;
+
+        loggerService.logDatabase('CREATE', 'categories', {
+          userId,
+          categoryId: newCategory._id.toString(),
+          name: categoryDef.name,
+          type: categoryDef.type,
+          isDefault: true,
+        });
+      } catch (error: any) {
+        // If category creation fails (e.g., duplicate), skip it
+        loggerService.warn('Failed to create default category', 'seed', {
+          userId,
+          categoryName: categoryDef.name,
+          error: error.message,
+        });
+        skipped++;
+        skippedCategories.push({
+          name: categoryDef.name,
+          type: categoryDef.type,
+          icon: categoryDef.icon,
+        });
+      }
+    }
+
+    loggerService.logUserAction('seed_default_categories', userId, {
+      created,
+      skipped,
+      total: defaultCategories.length,
+    });
+
+    return {
+      created,
+      skipped,
+      total: defaultCategories.length,
+      createdCategories,
+      skippedCategories,
+    };
+  } catch (error) {
+    loggerService.error('Failed to seed default categories', error, { userId });
+    throw new ValidationError('Failed to seed default categories');
+  }
+}
+
