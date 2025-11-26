@@ -167,9 +167,80 @@
 						"description": "Login with email and password.\n\n**Chunk**: 06 - User Login API Endpoint ✅\n\n**Rate Limit**: 5 requests per 15 minutes\n\n**Response**: Returns user data and JWT tokens (accessToken, refreshToken)\n\n**2FA Support**: If user has 2FA enabled, response will include `requires2FA: true` and no token will be returned until 2FA is verified."
 					},
 					"response": []
+				},
+				{
+					"name": "Logout User",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/auth/logout",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"auth",
+								"logout"
+							]
+						},
+						"description": "Logout user and invalidate session.\n\n**Chunk**: 30 - Logout Functionality ✅\n\n**Requires Authentication**: Yes (Bearer token)\n**Rate Limit**: Standard rate limiting\n\n**Note**: Since we're using stateless JWT tokens, the server doesn't invalidate tokens. The client clears tokens from localStorage. This endpoint is primarily for audit logging purposes.\n\n**Response**: Returns success message with 200 status\n\n**Frontend UI**: Logout button available in Header component user menu:\n- Located in top-right corner\n- Accessible via user avatar dropdown\n- Clears Redux state\n- Clears localStorage tokens\n- Redirects to login page\n- Calls logout API endpoint (non-blocking)"
+					},
+					"response": []
+				},
+				{
+					"name": "Change Password",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"currentPassword\": \"OldSecurePass123!\",\n  \"newPassword\": \"NewSecurePass123!\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/auth/change-password",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"auth",
+								"change-password"
+							]
+						},
+						"description": "Change user password with current password verification.\n\n**Chunk**: 29 - Password Change Functionality ✅\n\n**Requires Authentication**: Yes (Bearer token)\n**Rate Limit**: 5 requests per 15 minutes (stricter for password changes)\n\n**Request Body**:\n- `currentPassword` (required): User's current password\n- `newPassword` (required): New password (must meet strength requirements)\n\n**Password Requirements**:\n- Minimum 8 characters\n- At least one uppercase letter\n- At least one lowercase letter\n- At least one number\n- At least one special character\n- Must be different from current password\n\n**Validation**:\n- Verifies current password is correct\n- Validates new password strength\n- Prevents using same password as current\n- OAuth users cannot change password (must use OAuth provider)\n\n**Response**: Returns success message with 200 status\n\n**Frontend UI**: Password change page available at `/settings/password` with:\n- Current password field with show/hide toggle\n- New password field with strength indicator\n- Confirm password field with validation\n- Real-time password strength visualization\n- Form validation with Zod schema\n- Redux integration with changePassword thunk\n- Success/error toast notifications"
+					},
+					"response": []
 				}
 			],
-			"description": "Authentication endpoints for user registration, login, and session management"
+			"description": "Authentication endpoints for user registration, login, password management, and session management"
 		},
 		{
 			"name": "Categories",

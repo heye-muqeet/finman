@@ -6,6 +6,7 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import type { User } from '@/types/user.types';
 import type { UpdateProfileInput } from '@/lib/validators/user.validator';
+import type { ChangePasswordInput } from '@/lib/validators/auth.validator';
 
 /**
  * Authentication state interface
@@ -249,6 +250,50 @@ export const updateUserProfile = createAsyncThunk<
 );
 
 /**
+ * Async thunk for changing user password
+ */
+export const changePassword = createAsyncThunk<
+  void,
+  ChangePasswordInput,
+  { rejectValue: string }
+>(
+  'auth/changePassword',
+  async (passwordData, { rejectWithValue, getState }) => {
+    try {
+      const state = getState() as { auth: AuthState };
+      const token = state.auth.token;
+
+      if (!token) {
+        return rejectWithValue('No authentication token found');
+      }
+
+      const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+      const response = await fetch(`${baseUrl}/api/v1/auth/change-password`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(passwordData),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        const errorMessage = data.error?.message || data.error?.details || 'Failed to change password';
+        return rejectWithValue(errorMessage);
+      }
+
+      return undefined;
+    } catch (error) {
+      return rejectWithValue(
+        error instanceof Error ? error.message : 'An unexpected error occurred'
+      );
+    }
+  }
+);
+
+/**
  * Authentication slice
  */
 const authSlice = createSlice({
@@ -351,23 +396,38 @@ const authSlice = createSlice({
         state.error = action.payload || 'Failed to fetch profile';
       });
 
-    // Update user profile
-    builder
-      .addCase(updateUserProfile.pending, (state) => {
-        state.isLoading = true;
-        state.error = null;
-      })
-      .addCase(updateUserProfile.fulfilled, (state, action) => {
-        state.isLoading = false;
-        state.user = action.payload;
-        state.error = null;
-      })
-      .addCase(updateUserProfile.rejected, (state, action) => {
-        state.isLoading = false;
-        state.error = action.payload || 'Failed to update profile';
-      });
-  },
-});
+        // Update user profile
+        builder
+          .addCase(updateUserProfile.pending, (state) => {
+            state.isLoading = true;
+            state.error = null;
+          })
+          .addCase(updateUserProfile.fulfilled, (state, action) => {
+            state.isLoading = false;
+            state.user = action.payload;
+            state.error = null;
+          })
+          .addCase(updateUserProfile.rejected, (state, action) => {
+            state.isLoading = false;
+            state.error = action.payload || 'Failed to update profile';
+          });
+
+        // Change password
+        builder
+          .addCase(changePassword.pending, (state) => {
+            state.isLoading = true;
+            state.error = null;
+          })
+          .addCase(changePassword.fulfilled, (state) => {
+            state.isLoading = false;
+            state.error = null;
+          })
+          .addCase(changePassword.rejected, (state, action) => {
+            state.isLoading = false;
+            state.error = action.payload || 'Failed to change password';
+          });
+      },
+    });
 
 export const { setAuth, logout, clearError, updateUser } = authSlice.actions;
 export default authSlice.reducer;

@@ -71,7 +71,7 @@ export default function ProfilePage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold">Profile Settings</h1>
+          <h2 className="text-2xl font-bold">Profile Settings</h2>
           <p className="text-muted-foreground mt-2">
             Manage your personal information and preferences
           </p>

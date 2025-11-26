@@ -34,9 +34,33 @@ export default function Header() {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const handleLogout = () => {
-    dispatch(logout());
-    router.push('/login');
+  const handleLogout = async () => {
+    try {
+      // Call logout API endpoint (optional, for audit logging)
+      const token = localStorage.getItem('accessToken');
+      if (token) {
+        try {
+          const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+          await fetch(`${baseUrl}/api/v1/auth/logout`, {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${token}`,
+              'Content-Type': 'application/json',
+            },
+          });
+        } catch (error) {
+          // Don't block logout if API call fails
+          console.error('Logout API call failed:', error);
+        }
+      }
+    } catch (error) {
+      // Continue with logout even if API call fails
+      console.error('Logout error:', error);
+    } finally {
+      // Always clear local state and redirect
+      dispatch(logout());
+      router.push('/login');
+    }
   };
 
   const getUserInitials = () => {
