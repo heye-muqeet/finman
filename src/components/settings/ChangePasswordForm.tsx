@@ -16,6 +16,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Eye, EyeOff } from 'lucide-react';
 import LoadingSpinner from '@/components/common/LoadingSpinner';
+import { ErrorMessage } from '@/components/ui/error-message';
 
 interface ChangePasswordFormProps {
   onSubmit: (data: ChangePasswordInput) => Promise<void>;
@@ -136,9 +137,7 @@ export default function ChangePasswordForm({
                 )}
               </Button>
             </div>
-            {errors.currentPassword && (
-              <p className="text-sm text-destructive">{errors.currentPassword.message}</p>
-            )}
+            <ErrorMessage errors={errors} name="currentPassword" />
           </div>
 
           {/* New Password */}
@@ -168,9 +167,7 @@ export default function ChangePasswordForm({
                 )}
               </Button>
             </div>
-            {errors.newPassword && (
-              <p className="text-sm text-destructive">{errors.newPassword.message}</p>
-            )}
+            <ErrorMessage errors={errors} name="newPassword" />
             
             {/* Password Strength Indicator */}
             {newPassword && (
@@ -235,9 +232,7 @@ export default function ChangePasswordForm({
                 )}
               </Button>
             </div>
-            {errors.confirmPassword && (
-              <p className="text-sm text-destructive">{errors.confirmPassword.message}</p>
-            )}
+            <ErrorMessage errors={errors} name="confirmPassword" />
           </div>
 
           {/* Submit Button */}

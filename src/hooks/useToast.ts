@@ -1,58 +1,72 @@
 /**
  * Toast Hook
- * Hook for managing toast notifications
+ * Hook for managing toast notifications using Redux
  */
 
-import { useState, useCallback } from 'react';
-import type { ToastProps, ToastVariant } from '@/components/ui/toast';
+import { useCallback } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { addToast, removeToast } from '@/lib/store/slices/toastSlice';
+import type { RootState } from '@/lib/store';
+import type { ToastVariant } from '@/components/ui/toast';
 
-export interface Toast extends ToastProps {
-  id: string;
+/**
+ * Toast input interface
+ */
+export interface ToastInput {
+  title?: string;
+  description?: string;
+  variant?: ToastVariant;
+  duration?: number;
 }
 
+/**
+ * useToast Hook
+ * Provides methods to show and manage toast notifications
+ */
 export function useToast() {
-  const [toasts, setToasts] = useState<Toast[]>([]);
+  const dispatch = useDispatch();
+  const toasts = useSelector((state: RootState) => state.toast.toasts);
 
   const toast = useCallback(
-    (props: Omit<ToastProps, 'id'>) => {
-      const id = Math.random().toString(36).substring(2, 9);
-      const newToast: Toast = { ...props, id };
-      setToasts((prev) => [...prev, newToast]);
-      return id;
+    (props: ToastInput) => {
+      dispatch(addToast(props));
     },
-    []
+    [dispatch]
   );
 
-  const removeToast = useCallback((id: string) => {
-    setToasts((prev) => prev.filter((t) => t.id !== id));
-  }, []);
+  const remove = useCallback(
+    (id: string) => {
+      dispatch(removeToast(id));
+    },
+    [dispatch]
+  );
 
   const success = useCallback(
     (title: string, description?: string) => {
-      return toast({ title, description, variant: 'success' });
+      dispatch(addToast({ title, description, variant: 'success' }));
     },
-    [toast]
+    [dispatch]
   );
 
   const error = useCallback(
     (title: string, description?: string) => {
-      return toast({ title, description, variant: 'error' });
+      dispatch(addToast({ title, description, variant: 'error' }));
     },
-    [toast]
+    [dispatch]
   );
 
   const warning = useCallback(
     (title: string, description?: string) => {
-      return toast({ title, description, variant: 'warning' });
+      dispatch(addToast({ title, description, variant: 'warning' }));
     },
-    [toast]
+    [dispatch]
   );
 
   const info = useCallback(
     (title: string, description?: string) => {
-      return toast({ title, description, variant: 'info' });
+      dispatch(addToast({ title, description, variant: 'info' }));
     },
-    [toast]
+    [dispatch]
   );
 
   return {
@@ -62,7 +76,7 @@ export function useToast() {
     error,
     warning,
     info,
-    removeToast,
+    removeToast: remove,
   };
 }
 

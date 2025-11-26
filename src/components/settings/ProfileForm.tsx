@@ -24,6 +24,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import type { User } from '@/types/user.types';
 import LoadingSpinner from '@/components/common/LoadingSpinner';
+import { ErrorMessage } from '@/components/ui/error-message';
 
 interface ProfileFormProps {
   user: User | null;
@@ -62,7 +63,7 @@ export default function ProfileForm({
     setValue,
     reset,
     formState: { errors, isDirty },
-  } = useForm<UpdateProfileInput>({
+  } = useForm({
     resolver: zodResolver(updateProfileSchema),
     defaultValues: {
       firstName: user?.firstName ?? '',
@@ -132,9 +133,7 @@ export default function ProfileForm({
                   {...register('firstName')}
                   placeholder="Enter your first name"
                 />
-                {errors.firstName && (
-                  <p className="text-sm text-destructive">{errors.firstName.message}</p>
-                )}
+                <ErrorMessage errors={errors} name="firstName" />
               </div>
 
               <div className="space-y-2">
@@ -144,9 +143,7 @@ export default function ProfileForm({
                   {...register('lastName')}
                   placeholder="Enter your last name"
                 />
-                {errors.lastName && (
-                  <p className="text-sm text-destructive">{errors.lastName.message}</p>
-                )}
+                <ErrorMessage errors={errors} name="lastName" />
               </div>
             </div>
 
@@ -189,7 +186,7 @@ export default function ProfileForm({
                   )}
                 />
                 {errors.currency && (
-                  <p className="text-sm text-destructive">{errors.currency.message}</p>
+                  <ErrorMessage errors={errors} name="currency" />
                 )}
               </div>
 
@@ -213,9 +210,7 @@ export default function ProfileForm({
                     </Select>
                   )}
                 />
-                {errors.timezone && (
-                  <p className="text-sm text-destructive">{errors.timezone.message}</p>
-                )}
+                <ErrorMessage errors={errors} name="timezone" />
               </div>
             </div>
           </div>
@@ -243,9 +238,7 @@ export default function ProfileForm({
                     </Select>
                   )}
                 />
-                {errors.preferences?.theme && (
-                  <p className="text-sm text-destructive">{errors.preferences.theme.message}</p>
-                )}
+                <ErrorMessage errors={errors} name="preferences.theme" />
               </div>
 
               <div className="space-y-2">
@@ -261,9 +254,7 @@ export default function ProfileForm({
                     />
                   )}
                 />
-                {errors.preferences?.language && (
-                  <p className="text-sm text-destructive">{errors.preferences.language.message}</p>
-                )}
+                <ErrorMessage errors={errors} name="preferences.language" />
               </div>
 
               <div className="space-y-2">
@@ -286,9 +277,7 @@ export default function ProfileForm({
                     </Select>
                   )}
                 />
-                {errors.preferences?.currency && (
-                  <p className="text-sm text-destructive">{errors.preferences.currency.message}</p>
-                )}
+                <ErrorMessage errors={errors} name="preferences.currency" />
               </div>
 
               <div className="space-y-2">
@@ -311,9 +300,7 @@ export default function ProfileForm({
                     </Select>
                   )}
                 />
-                {errors.preferences?.timezone && (
-                  <p className="text-sm text-destructive">{errors.preferences.timezone.message}</p>
-                )}
+                <ErrorMessage errors={errors} name="preferences.timezone" />
               </div>
 
               <div className="space-y-2">
@@ -329,9 +316,7 @@ export default function ProfileForm({
                     />
                   )}
                 />
-                {errors.preferences?.dateFormat && (
-                  <p className="text-sm text-destructive">{errors.preferences.dateFormat.message}</p>
-                )}
+                <ErrorMessage errors={errors} name="preferences.dateFormat" />
               </div>
 
               <div className="space-y-2">
@@ -351,9 +336,7 @@ export default function ProfileForm({
                     </Select>
                   )}
                 />
-                {errors.preferences?.timeFormat && (
-                  <p className="text-sm text-destructive">{errors.preferences.timeFormat.message}</p>
-                )}
+                <ErrorMessage errors={errors} name="preferences.timeFormat" />
               </div>
             </div>
 
@@ -373,9 +356,7 @@ export default function ProfileForm({
                 Enable notifications
               </Label>
             </div>
-            {errors.preferences?.notifications && (
-              <p className="text-sm text-destructive">{errors.preferences.notifications.message}</p>
-            )}
+            <ErrorMessage errors={errors} name="preferences.notifications" />
           </div>
 
           {/* Submit Button */}

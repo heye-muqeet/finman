@@ -21,6 +21,7 @@ import userReducer from './slices/userSlice';
 import uiReducer from './slices/uiSlice';
 import categoriesReducer from './slices/categoriesSlice';
 import transactionsReducer from './slices/transactionsSlice';
+import toastReducer from './slices/toastSlice';
 
 /**
  * Redux Persist configuration
@@ -31,8 +32,8 @@ const persistConfig = {
   storage,
   // Only persist auth slice (user and token)
   whitelist: ['auth'],
-  // Don't persist UI state (sidebar, notifications, etc.)
-  blacklist: ['ui'],
+  // Don't persist UI state (sidebar, notifications, toasts, etc.)
+  blacklist: ['ui', 'toast'],
 };
 
 /**
@@ -44,6 +45,7 @@ const rootReducer = combineReducers({
   ui: uiReducer,
   categories: categoriesReducer,
   transactions: transactionsReducer,
+  toast: toastReducer,
 });
 
 /**

@@ -44,6 +44,7 @@ import type { Category } from '@/types/category.types';
 import { cn } from '@/lib/utils/cn';
 import { Save, X } from 'lucide-react';
 import LoadingSpinner from '@/components/common/LoadingSpinner';
+import { ErrorMessage } from '@/components/ui/error-message';
 
 interface TransactionFormProps {
   initialData?: Transaction | null;
@@ -261,9 +262,7 @@ export default function TransactionForm({
                 </Select>
               )}
             />
-            {errors.type && (
-              <p className="text-sm text-destructive">{errors.type.message}</p>
-            )}
+            <ErrorMessage errors={errors} name="type" />
           </div>
 
           {/* Amount and Currency */}
@@ -282,9 +281,7 @@ export default function TransactionForm({
                 disabled={isLoading}
                 placeholder="0.00"
               />
-              {errors.amount && (
-                <p className="text-sm text-destructive">{errors.amount.message}</p>
-              )}
+              <ErrorMessage errors={errors} name="amount" />
             </div>
             <div className="space-y-2">
               <Label htmlFor="currency">
@@ -322,9 +319,7 @@ export default function TransactionForm({
                   </div>
                 )}
               />
-              {errors.currency && (
-                <p className="text-sm text-destructive">{errors.currency.message}</p>
-              )}
+              <ErrorMessage errors={errors} name="currency" />
             </div>
           </div>
 
@@ -390,7 +385,7 @@ export default function TransactionForm({
               )}
             />
             {errors.categoryId && (
-              <p className="text-sm text-destructive">{errors.categoryId.message}</p>
+              <ErrorMessage errors={errors} name="categoryId" />
             )}
             {filteredCategories.length === 0 && (
               <p className="text-sm text-muted-foreground">
@@ -430,9 +425,7 @@ export default function TransactionForm({
               rows={3}
               maxLength={1000}
             />
-            {errors.description && (
-              <p className="text-sm text-destructive">{errors.description.message}</p>
-            )}
+            <ErrorMessage errors={errors} name="description" />
           </div>
 
           {/* Payment Method */}
@@ -460,9 +453,7 @@ export default function TransactionForm({
                 </Select>
               )}
             />
-            {errors.paymentMethod && (
-              <p className="text-sm text-destructive">{errors.paymentMethod.message}</p>
-            )}
+            <ErrorMessage errors={errors} name="paymentMethod" />
           </div>
 
           {/* Tags */}
@@ -626,11 +617,7 @@ export default function TransactionForm({
                       );
                     }}
                   />
-                  {errors.recurringPattern?.frequency && (
-                    <p className="text-sm text-destructive">
-                      {errors.recurringPattern.frequency.message}
-                    </p>
-                  )}
+                  <ErrorMessage errors={errors} name="recurringPattern.frequency" />
                 </div>
 
                 <div className="space-y-2">
@@ -700,9 +687,7 @@ export default function TransactionForm({
               disabled={isLoading}
               placeholder="Receipt ID"
             />
-            {errors.receiptId && (
-              <p className="text-sm text-destructive">{errors.receiptId.message}</p>
-            )}
+            <ErrorMessage errors={errors} name="receiptId" />
           </div>
 
           {/* Form Actions */}

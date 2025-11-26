@@ -37,7 +37,6 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Plus } from 'lucide-react';
 import type { Transaction } from '@/types/transaction.types';
 import { useToast } from '@/hooks/useToast';
-import { ToastContainer } from '@/components/ui/toast';
 
 export default function TransactionsPage() {
   const dispatch = useAppDispatch();
@@ -47,7 +46,7 @@ export default function TransactionsPage() {
     selectedTransaction,
     isLoading: isLoadingTransaction,
   } = useAppSelector((state) => state.transactions);
-  const { toasts, success, error: showError, removeToast } = useToast();
+  const { success, error: showError } = useToast();
 
   const [deleteTransactionState, setDeleteTransactionState] = useState<Transaction | null>(null);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
@@ -243,7 +242,6 @@ export default function TransactionsPage() {
       </div>
 
       {/* Toast Container */}
-      <ToastContainer toasts={toasts} onRemove={removeToast} />
     </>
   );
 }

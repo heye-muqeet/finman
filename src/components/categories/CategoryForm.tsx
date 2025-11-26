@@ -23,6 +23,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import ColorPicker from '@/components/categories/ColorPicker';
 import IconPicker from '@/components/categories/IconPicker';
 import type { Category } from '@/types/category.types';
+import { ErrorMessage } from '@/components/ui/error-message';
 
 interface CategoryFormProps {
   onSubmit: (data: CreateCategoryInput) => Promise<void>;
@@ -87,9 +88,7 @@ export default function CategoryForm({
           placeholder="e.g., Food & Dining"
           disabled={isLoading}
         />
-        {errors.name && (
-          <p className="text-sm text-destructive">{errors.name.message}</p>
-        )}
+        <ErrorMessage errors={errors} name="name" />
       </div>
 
       {/* Category Type */}
@@ -109,9 +108,7 @@ export default function CategoryForm({
             <SelectItem value="both">Both</SelectItem>
           </SelectContent>
         </Select>
-        {errors.type && (
-          <p className="text-sm text-destructive">{errors.type.message}</p>
-        )}
+        <ErrorMessage errors={errors} name="type" />
       </div>
 
       {/* Parent Category */}
@@ -137,11 +134,7 @@ export default function CategoryForm({
               ))}
             </SelectContent>
           </Select>
-          {errors.parentCategoryId && (
-            <p className="text-sm text-destructive">
-              {errors.parentCategoryId.message}
-            </p>
-          )}
+          <ErrorMessage errors={errors} name="parentCategoryId" />
         </div>
       )}
 
@@ -152,9 +145,7 @@ export default function CategoryForm({
           value={watch('icon') || undefined}
           onChange={(icon) => setValue('icon', icon ?? undefined, { shouldValidate: true })}
         />
-        {errors.icon && (
-          <p className="text-sm text-destructive">{errors.icon.message}</p>
-        )}
+        <ErrorMessage errors={errors} name="icon" />
       </div>
 
       {/* Color */}
@@ -164,9 +155,7 @@ export default function CategoryForm({
           value={watch('color') || undefined}
           onChange={(color) => setValue('color', color ?? undefined, { shouldValidate: true })}
         />
-        {errors.color && (
-          <p className="text-sm text-destructive">{errors.color.message}</p>
-        )}
+        <ErrorMessage errors={errors} name="color" />
       </div>
 
       {/* Form Actions */}
