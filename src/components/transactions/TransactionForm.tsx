@@ -342,7 +342,23 @@ export default function TransactionForm({
                   disabled={isLoading || filteredCategories.length === 0}
                 >
                   <SelectTrigger id="categoryId" className="w-full">
-                    <SelectValue placeholder="Select category" />
+                    {selectedCategory ? (
+                      <div className="flex items-center gap-2">
+                        {selectedCategory.icon && (
+                          <span className="text-base" aria-hidden="true">{selectedCategory.icon}</span>
+                        )}
+                        {selectedCategory.color && (
+                          <div
+                            className="w-3 h-3 rounded-full shrink-0"
+                            style={{ backgroundColor: selectedCategory.color }}
+                            aria-hidden="true"
+                          />
+                        )}
+                        <span>{selectedCategory.name}</span>
+                      </div>
+                    ) : (
+                      <SelectValue placeholder="Select category" />
+                    )}
                   </SelectTrigger>
                   <SelectContent>
                     {filteredCategories.length === 0 ? (
@@ -354,12 +370,13 @@ export default function TransactionForm({
                         <SelectItem key={category._id} value={category._id}>
                           <div className="flex items-center gap-2">
                             {category.icon && (
-                              <span className="text-base">{category.icon}</span>
+                              <span className="text-base" aria-hidden="true">{category.icon}</span>
                             )}
                             {category.color && (
                               <div
-                                className="w-3 h-3 rounded-full"
+                                className="w-3 h-3 rounded-full shrink-0"
                                 style={{ backgroundColor: category.color }}
+                                aria-hidden="true"
                               />
                             )}
                             <span>{category.name}</span>

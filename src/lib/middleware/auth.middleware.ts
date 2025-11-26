@@ -7,6 +7,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getTokenFromHeaders, verifyTokenAndGetUser } from '@/lib/utils/auth';
 import { errorResponse } from '@/lib/utils/api-response';
 import { UnauthorizedError } from '@/lib/utils/error-handler';
+import { logRequest, logResponse } from '@/lib/middleware/request-logger.middleware';
 
 /**
  * Request with authenticated user attached
@@ -105,9 +106,9 @@ export async function authenticate(
 
 /**
  * Higher-order function to protect API routes
- * Wraps a route handler with authentication middleware
+ * Wraps a route handler with authentication middleware and request logging
  * @param handler - Route handler function
- * @returns Protected route handler
+ * @returns Protected route handler with logging
  */
 export function withAuth(
   handler: (
@@ -116,10 +117,23 @@ export function withAuth(
   ) => Promise<NextResponse>
 ) {
   return async (request: NextRequest): Promise<NextResponse> => {
+    const startTime = Date.now();
+    const requestId = `req_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    
     // Authenticate request
     const authResult = await authenticate(request);
 
     if (!authResult.success || !authResult.user) {
+      // Log failed authentication attempt
+      logRequest(request, requestId);
+      logResponse(request, authResult.response || errorResponse(
+        {
+          code: 'UNAUTHORIZED',
+          message: 'Authentication required',
+        },
+        401
+      ), requestId, startTime);
+      
       // Return error response from middleware
       return authResult.response || errorResponse(
         {
@@ -130,8 +144,35 @@ export function withAuth(
       );
     }
 
-    // Call the handler with authenticated user
-    return handler(request, { user: authResult.user });
+    // Log authenticated request
+    logRequest(request, requestId, authResult.user._id);
+
+    try {
+      // Call the handler with authenticated user
+      const response = await handler(request, { user: authResult.user });
+      
+      // Log successful response
+      logResponse(request, response, requestId, startTime, authResult.user._id);
+      
+      // Add request ID to response headers
+      response.headers.set('X-Request-ID', requestId);
+      response.headers.set('X-Response-Time', `${Date.now() - startTime}ms`);
+      
+      return response;
+    } catch (error) {
+      // Log error response
+      const errorResponseObj = errorResponse(
+        {
+          code: 'INTERNAL_ERROR',
+          message: error instanceof Error ? error.message : 'An unexpected error occurred',
+        },
+        500
+      );
+      logResponse(request, errorResponseObj, requestId, startTime, authResult.user._id);
+      errorResponseObj.headers.set('X-Request-ID', requestId);
+      errorResponseObj.headers.set('X-Response-Time', `${Date.now() - startTime}ms`);
+      return errorResponseObj;
+    }
   };
 }
 

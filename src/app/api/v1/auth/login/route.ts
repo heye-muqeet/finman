@@ -11,12 +11,13 @@ import { successResponse, errorResponse } from '@/lib/utils/api-response';
 import { UnauthorizedError, ValidationError } from '@/lib/utils/error-handler';
 import { handleError } from '@/lib/utils/error-handler';
 import { connectDB } from '@/lib/database/connection';
+import { withRequestLogging } from '@/lib/middleware/request-logger.middleware';
 
 /**
  * POST /api/v1/auth/login
  * Login user with email and password
  */
-export async function POST(request: NextRequest) {
+export const POST = withRequestLogging(async function POST(request: NextRequest) {
   try {
     // Apply rate limiting
     const rateLimitResponse = await authRateLimit(request);
@@ -119,5 +120,5 @@ export async function POST(request: NextRequest) {
     console.error('Login error:', error);
     return handleError(error);
   }
-}
+});
 
