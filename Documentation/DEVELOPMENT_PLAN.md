@@ -774,19 +774,27 @@ Total estimated chunks: 85
 
 ---
 
-### 38. Chunk 38 – Budget API Endpoints
+### 38. Chunk 38 – Budget API Endpoints ✅ COMPLETE
 **Description**: Create budget API routes with authentication and validation.
 
 **Files/Folders to create/modify**:
-- `src/app/api/v1/budgets/route.ts` - GET, POST
-- `src/app/api/v1/budgets/[id]/route.ts` - GET, PUT, DELETE
-- `src/lib/validators/budget.validator.ts` - Budget validation
+- `src/app/api/v1/budgets/route.ts` - GET, POST ✅
+- `src/app/api/v1/budgets/[id]/route.ts` - GET, PUT, DELETE ✅
+- `src/app/api/v1/budgets/[id]/progress/route.ts` - GET (progress calculation) ✅
+- `src/lib/validators/budget.validator.ts` - Budget validation ✅
 
 **Verification steps**:
-• Test: All budget CRUD endpoints
-• Expected: Endpoints work with authentication
-• Verify: Validation works
-• Check: Budget progress calculated correctly
+• Test: All budget CRUD endpoints ✅ (GET /api/v1/budgets, POST /api/v1/budgets, GET /api/v1/budgets/[id], PUT /api/v1/budgets/[id], DELETE /api/v1/budgets/[id])
+• Test: Budget progress endpoint ✅ (GET /api/v1/budgets/[id]/progress)
+• Expected: Endpoints work with authentication ✅ (All routes protected with withAuth middleware)
+• Verify: Validation works ✅ (Zod validation with createBudgetSchema and updateBudgetSchema, detailed error messages)
+• Check: Budget progress calculated correctly ✅ (Progress endpoint uses calculateBudgetProgress service)
+• Verify: Query parameters work ✅ (GET /api/v1/budgets supports isActive, period, categoryId filters)
+• Verify: Rate limiting works ✅ (All endpoints use standardRateLimit)
+• Verify: Error handling works ✅ (ValidationError, NotFoundError, ForbiddenError properly handled)
+• Verify: Standardized responses ✅ (Uses successResponse and errorResponse utilities)
+• Verify: Type exports ✅ (CreateBudgetInput and UpdateBudgetInput types exported from validator)
+• Verify: Empty string handling ✅ (z.preprocess converts empty strings to null for color and icon fields in update schema, consistent with category validator)
 
 ---
 
