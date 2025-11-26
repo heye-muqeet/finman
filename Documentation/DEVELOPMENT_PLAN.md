@@ -484,12 +484,10 @@ Total estimated chunks: 85
 ---
 
 ### 24. Chunk 24 – Transactions Page with Full CRUD ✅ COMPLETE
-**Description**: Create transactions page integrating list, form, and all CRUD operations.
+**Description**: Create transactions page integrating list, form, and all CRUD operations using modals for create/edit.
 
 **Files/Folders to create/modify**:
-- `src/app/(dashboard)/transactions/page.tsx` - Transactions page ✅
-- `src/app/(dashboard)/transactions/new/page.tsx` - Create transaction page ✅
-- `src/app/(dashboard)/transactions/edit/[id]/page.tsx` - Edit transaction page ✅
+- `src/app/(dashboard)/transactions/page.tsx` - Transactions page with modals ✅
 - `src/components/ui/toast.tsx` - Toast notification component ✅
 - `src/hooks/useToast.ts` - Toast hook for managing notifications ✅
 - Update transaction components with edit/delete ✅
@@ -498,15 +496,16 @@ Total estimated chunks: 85
 • Run: `npm run dev` ✅
 • Visit: http://localhost:3000/transactions ✅
 • Test: View transactions list ✅ (TransactionList component with filters, sorting, pagination)
-• Test: Create new transaction ✅ (Navigate to /transactions/new, standalone form page)
-• Test: Edit existing transaction ✅ (Navigate to /transactions/edit/[id], standalone form page)
+• Test: Create new transaction ✅ (Open create modal via "New Transaction" button, modal form)
+• Test: Edit existing transaction ✅ (Click edit on transaction, opens edit modal with pre-filled form)
 • Test: Delete transaction ✅ (AlertDialog confirmation, auto-refresh list)
 • Expected: All CRUD operations work ✅ (Create, Read, Update, Delete all functional)
-• Verify: UI updates correctly ✅ (Redux state updates, toast notifications, redirects)
-• Verify: Navigation works ✅ (Back buttons, redirect after success)
+• Verify: UI updates correctly ✅ (Redux state updates, toast notifications, modals close on success)
+• Verify: Modal functionality works ✅ (Create and edit modals open/close correctly, form resets)
 • Verify: Toast notifications ✅ (Success/error toasts for all operations)
 • Verify: Delete confirmation ✅ (AlertDialog with transaction details)
 • Verify: Error handling ✅ (Error alerts, loading states, not found handling)
+• Note: Create/edit functionality implemented as modals (Dialog components) instead of standalone pages for better UX
 
 ---
 
@@ -568,7 +567,7 @@ Total estimated chunks: 85
 
 ---
 
-    ### 28. Chunk 28 – User Profile UI Page ✅ COMPLETE
+### 28. Chunk 28 – User Profile UI Page ✅ COMPLETE
 **Description**: Create user profile page with form to edit user information.
 
 **Files/Folders to create/modify**:
