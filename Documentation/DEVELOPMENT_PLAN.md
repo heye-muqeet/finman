@@ -761,7 +761,7 @@ Total estimated chunks: 85
 • Verify: Progress calculations are accurate ✅ (Spent amount calculated from expense transactions, percentage used, remaining amount, period days, days remaining)
 • Verify: Logger integration ✅ (All operations logged with loggerService.logDatabase and loggerService.logUserAction)
 • Verify: Error handling ✅ (ValidationError, NotFoundError, ForbiddenError handling)
-• Verify: Date range calculation ✅ (Calculates current period if endDate is null, handles weekly/monthly/yearly periods)
+• Verify: Date range calculation ✅ (Calculates current period if endDate is null, handles weekly/monthly/yearly periods. For budgets without endDate, calculates progress from the start of the current period to now, not just the first period)
 • Verify: Category filtering ✅ (Filters transactions by categoryId if budget has category, otherwise all expenses)
 • Verify: Currency matching ✅ (Only matches transactions with same currency as budget)
 • Verify: Alert logic ✅ (Checks both threshold and exceeded alerts, returns alertType and alertMessage)

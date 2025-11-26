@@ -5,3 +5,6 @@ First Review the next chunk against the existing documentation and previous cont
 Proceed to the next chunk, follow the documentation
 
 Review the completed chunk for accuracy and alignment. Ask for clarification if anything is missing or unclear.
+
+
+go apply you recomendations and observation

@@ -46,8 +46,8 @@ function toBudgetObject(budget: IBudget): BudgetDTO {
 }
 
 /**
- * Calculate the end date for a budget period if endDate is not set
- * @param startDate - Budget start date
+ * Calculate the end date for a budget period
+ * @param startDate - Period start date
  * @param period - Budget period (weekly, monthly, yearly)
  * @returns Calculated end date
  */
@@ -70,27 +70,69 @@ function calculatePeriodEndDate(startDate: Date, period: BudgetPeriod): Date {
 }
 
 /**
+ * Calculate the start date of the current period for a budget
+ * @param originalStartDate - Budget's original start date
+ * @param period - Budget period (weekly, monthly, yearly)
+ * @param now - Current date (defaults to now)
+ * @returns Start date of the current period
+ */
+function calculateCurrentPeriodStart(
+  originalStartDate: Date,
+  period: BudgetPeriod,
+  now: Date = new Date()
+): Date {
+  let currentPeriodStart = new Date(originalStartDate);
+  const firstPeriodEnd = calculatePeriodEndDate(originalStartDate, period);
+  
+  // If we're still in the first period, use original start date
+  if (now < firstPeriodEnd) {
+    return originalStartDate;
+  }
+  
+  // Calculate how many periods have passed
+  let periodsPassed = 0;
+  let periodEnd = new Date(firstPeriodEnd);
+  
+  while (periodEnd <= now) {
+    periodsPassed++;
+    periodEnd = calculatePeriodEndDate(periodEnd, period);
+  }
+  
+  // Calculate current period start
+  currentPeriodStart = new Date(originalStartDate);
+  switch (period) {
+    case 'weekly':
+      currentPeriodStart.setDate(currentPeriodStart.getDate() + (periodsPassed * 7));
+      break;
+    case 'monthly':
+      currentPeriodStart.setMonth(currentPeriodStart.getMonth() + periodsPassed);
+      break;
+    case 'yearly':
+      currentPeriodStart.setFullYear(currentPeriodStart.getFullYear() + periodsPassed);
+      break;
+  }
+  
+  return currentPeriodStart;
+}
+
+/**
  * Get the effective date range for budget progress calculation
  * @param budget - Budget document
  * @returns Object with startDate and endDate for calculation
  */
 function getBudgetDateRange(budget: IBudget): { startDate: Date; endDate: Date | null } {
-  const startDate = budget.startDate;
+  let startDate = budget.startDate;
   let endDate: Date | null = budget.endDate || null;
   
   // If endDate is not set, calculate based on current period
   if (!endDate) {
     const now = new Date();
-    const periodEnd = calculatePeriodEndDate(startDate, budget.period);
     
-    // Use the earlier of: calculated period end or current date
-    // This ensures we only calculate progress up to the current period
-    if (periodEnd > now) {
-      endDate = now;
-    } else {
-      // If we're past the period, use the period end
-      endDate = periodEnd;
-    }
+    // Calculate the start of the current period
+    startDate = calculateCurrentPeriodStart(budget.startDate, budget.period, now);
+    
+    // Use current date as end date (we're calculating progress up to now)
+    endDate = now;
   }
   
   return { startDate, endDate };
