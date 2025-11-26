@@ -798,16 +798,21 @@ Total estimated chunks: 85
 
 ---
 
-### 39. Chunk 39 – Budget Redux Slice
+### 39. Chunk 39 – Budget Redux Slice ✅ COMPLETE
 **Description**: Create Redux slice for budgets with async thunks.
 
 **Files/Folders to create/modify**:
-- `src/lib/store/slices/budgetsSlice.ts` - Budget Redux slice
+- `src/lib/store/slices/budgetsSlice.ts` - Budget Redux slice ✅
+- `src/lib/store/index.ts` - Added budgets reducer to store ✅
 
 **Verification steps**:
-• Test: Budget actions work
-• Expected: State updates correctly
-• Verify: API integration works
+• Test: Budget actions work ✅ (fetchBudgets, createBudget, getBudgetById, updateBudget, deleteBudget, getBudgetProgress)
+• Expected: State updates correctly ✅ (All async thunks update state properly with loading flags and error handling)
+• Verify: API integration works ✅ (All thunks call correct API endpoints with authentication)
+• Verify: Filter parameters work ✅ (fetchBudgets supports isActive, period, categoryId filters)
+• Verify: Progress tracking works ✅ (getBudgetProgress thunk fetches and stores budget progress data)
+• Verify: Store integration works ✅ (Budgets reducer added to rootReducer)
+• Verify: State management works ✅ (selectedBudget, selectedBudgetProgress, loading states, error handling)
 
 ---
 

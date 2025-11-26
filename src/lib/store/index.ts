@@ -21,6 +21,7 @@ import userReducer from './slices/userSlice';
 import uiReducer from './slices/uiSlice';
 import categoriesReducer from './slices/categoriesSlice';
 import transactionsReducer from './slices/transactionsSlice';
+import budgetsReducer from './slices/budgetsSlice';
 import toastReducer from './slices/toastSlice';
 
 /**
@@ -45,6 +46,7 @@ const rootReducer = combineReducers({
   ui: uiReducer,
   categories: categoriesReducer,
   transactions: transactionsReducer,
+  budgets: budgetsReducer,
   toast: toastReducer,
 });
 
