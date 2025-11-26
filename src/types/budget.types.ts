@@ -104,3 +104,31 @@ export interface BudgetsListResponse {
   message?: string;
 }
 
+/**
+ * Budget Progress Interface
+ * (Defined in budgets.service.ts, exported here for type consistency)
+ */
+export interface BudgetProgress {
+  spent: number;
+  remaining: number;
+  percentageUsed: number;
+  isExceeded: boolean;
+  alertTriggered: boolean;
+  alertType: 'threshold' | 'exceeded' | null;
+  alertMessage: string | null;
+  transactionCount: number;
+  startDate: Date;
+  endDate: Date | null;
+  periodDays: number;
+  daysRemaining: number | null;
+}
+
+/**
+ * Budget Progress Response Type
+ */
+export interface BudgetProgressResponse {
+  budget: Budget;
+  progress: BudgetProgress;
+  message?: string;
+}
+
