@@ -5,6 +5,7 @@
 
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import type { User } from '@/types/user.types';
+import type { UpdateProfileInput } from '@/lib/validators/user.validator';
 
 /**
  * Authentication state interface
@@ -160,6 +161,94 @@ export const registerUser = createAsyncThunk<
 );
 
 /**
+ * Async thunk for fetching user profile
+ */
+export const fetchUserProfile = createAsyncThunk<
+  User,
+  void,
+  { rejectValue: string }
+>(
+  'auth/fetchUserProfile',
+  async (_, { rejectWithValue, getState }) => {
+    try {
+      const state = getState() as { auth: AuthState };
+      const token = state.auth.token;
+
+      if (!token) {
+        return rejectWithValue('No authentication token found');
+      }
+
+      const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+      const response = await fetch(`${baseUrl}/api/v1/users/profile`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        return rejectWithValue(
+          data.error?.message || 'Failed to fetch user profile'
+        );
+      }
+
+      return data.data;
+    } catch (error) {
+      return rejectWithValue(
+        error instanceof Error ? error.message : 'An unexpected error occurred'
+      );
+    }
+  }
+);
+
+/**
+ * Async thunk for updating user profile
+ */
+export const updateUserProfile = createAsyncThunk<
+  User,
+  UpdateProfileInput,
+  { rejectValue: string }
+>(
+  'auth/updateUserProfile',
+  async (profileData, { rejectWithValue, getState }) => {
+    try {
+      const state = getState() as { auth: AuthState };
+      const token = state.auth.token;
+
+      if (!token) {
+        return rejectWithValue('No authentication token found');
+      }
+
+      const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+      const response = await fetch(`${baseUrl}/api/v1/users/profile`, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(profileData),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        const errorMessage = data.error?.message || data.error?.details || 'Failed to update profile';
+        return rejectWithValue(errorMessage);
+      }
+
+      return data.data;
+    } catch (error) {
+      return rejectWithValue(
+        error instanceof Error ? error.message : 'An unexpected error occurred'
+      );
+    }
+  }
+);
+
+/**
  * Authentication slice
  */
 const authSlice = createSlice({
@@ -244,6 +333,38 @@ const authSlice = createSlice({
         state.isLoading = false;
         state.error = action.payload || 'Registration failed';
         state.isAuthenticated = false;
+      });
+
+    // Fetch user profile
+    builder
+      .addCase(fetchUserProfile.pending, (state) => {
+        state.isLoading = true;
+        state.error = null;
+      })
+      .addCase(fetchUserProfile.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.user = action.payload;
+        state.error = null;
+      })
+      .addCase(fetchUserProfile.rejected, (state, action) => {
+        state.isLoading = false;
+        state.error = action.payload || 'Failed to fetch profile';
+      });
+
+    // Update user profile
+    builder
+      .addCase(updateUserProfile.pending, (state) => {
+        state.isLoading = true;
+        state.error = null;
+      })
+      .addCase(updateUserProfile.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.user = action.payload;
+        state.error = null;
+      })
+      .addCase(updateUserProfile.rejected, (state, action) => {
+        state.isLoading = false;
+        state.error = action.payload || 'Failed to update profile';
       });
   },
 });

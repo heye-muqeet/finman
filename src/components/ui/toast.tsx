@@ -158,7 +158,7 @@ export function ToastContainer({ toasts, onRemove }: ToastContainerProps) {
   if (toasts.length === 0) return null;
 
   return (
-    <div className="pointer-events-none fixed top-0 z-[100] flex max-h-screen w-full flex-col gap-2 p-4 sm:bottom-auto sm:right-0 sm:top-0 sm:flex-col md:max-w-[420px]">
+    <div className="pointer-events-none fixed top-0 z-100 flex max-h-screen w-full flex-col gap-2 p-4 sm:bottom-auto sm:right-0 sm:top-0 sm:flex-col md:max-w-[420px]">
       {toasts.map((toast) => (
         <Toast
           key={toast.id}
