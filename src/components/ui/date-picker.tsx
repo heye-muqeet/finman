@@ -118,6 +118,12 @@ export function DatePicker({
 
     setSelectedDate(finalDate);
     onChange(finalDate);
+    
+    // Close popover automatically if time selection is not enabled
+    // If time is enabled, keep it open so user can adjust time
+    if (!showTime) {
+      setOpen(false);
+    }
   };
 
   const handleTimeChange = (newTime: string) => {

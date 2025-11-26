@@ -89,10 +89,15 @@ export const createTransactionSchema = z.object({
     .max(20, 'Cannot have more than 20 tags')
     .optional(),
   location: locationSchema.optional(),
-  receiptId: z
-    .string()
-    .regex(/^[0-9a-fA-F]{24}$/, 'Receipt ID must be a valid MongoDB ObjectId')
-    .optional(),
+  receiptId: z.preprocess(
+    (val) => (val === '' || val === null ? undefined : val),
+    z
+      .union([
+        z.string().trim().regex(/^[0-9a-fA-F]{24}$/, 'Receipt ID must be a valid MongoDB ObjectId'),
+        z.undefined(),
+      ])
+      .optional()
+  ),
   isRecurring: z.boolean().optional(),
   recurringPattern: recurringPatternSchema.optional(),
 });
@@ -148,11 +153,12 @@ export const updateTransactionSchema = z.object({
     locationSchema.nullable().optional()
   ),
   receiptId: z.preprocess(
-    (val) => (val === '' ? null : val),
+    (val) => (val === '' || val === null ? undefined : val),
     z
-      .string()
-      .regex(/^[0-9a-fA-F]{24}$/, 'Receipt ID must be a valid MongoDB ObjectId')
-      .nullable()
+      .union([
+        z.string().trim().regex(/^[0-9a-fA-F]{24}$/, 'Receipt ID must be a valid MongoDB ObjectId'),
+        z.undefined(),
+      ])
       .optional()
   ),
   isRecurring: z.boolean().optional(),

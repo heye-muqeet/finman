@@ -288,62 +288,63 @@ export default function TransactionList({
                   <Card key={transaction._id}>
                     <CardContent className="pt-4">
                       <div className="flex items-start justify-between">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-1">
-                          {transaction.type === 'income' ? (
-                            <TrendingUp className="h-4 w-4 text-green-600" />
-                          ) : (
-                            <TrendingDown className="h-4 w-4 text-red-600" />
-                          )}
-                          <span className="font-medium">
-                            {formatCurrency(transaction.amount, transaction.currency)}
-                          </span>
-                          <span
-                            className={cn(
-                              'text-xs px-2 py-0.5 rounded',
-                              transaction.type === 'income'
-                                ? 'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300'
-                                : 'bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300'
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2 mb-1">
+                            {transaction.type === 'income' ? (
+                              <TrendingUp className="h-4 w-4 text-green-600" />
+                            ) : (
+                              <TrendingDown className="h-4 w-4 text-red-600" />
                             )}
-                          >
-                            {transaction.type}
-                          </span>
+                            <span className="font-medium">
+                              {formatCurrency(transaction.amount, transaction.currency)}
+                            </span>
+                            <span
+                              className={cn(
+                                'text-xs px-2 py-0.5 rounded',
+                                transaction.type === 'income'
+                                  ? 'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300'
+                                  : 'bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300'
+                              )}
+                            >
+                              {transaction.type}
+                            </span>
+                          </div>
+                          <p className="text-sm text-muted-foreground">
+                            {transaction.description || 'No description'}
+                          </p>
+                          <div className="flex items-center gap-2 mt-2 text-xs text-muted-foreground">
+                            <span>{getCategoryName(transaction.categoryId)}</span>
+                            <span>•</span>
+                            <span>{formatDate(transaction.date)}</span>
+                          </div>
                         </div>
-                        <p className="text-sm text-muted-foreground">
-                          {transaction.description || 'No description'}
-                        </p>
-                        <div className="flex items-center gap-2 mt-2 text-xs text-muted-foreground">
-                          <span>{getCategoryName(transaction.categoryId)}</span>
-                          <span>•</span>
-                          <span>{formatDate(transaction.date)}</span>
+                        <div className="flex gap-1">
+                          {onEditClick && (
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-8 w-8"
+                              onClick={() => onEditClick(transaction)}
+                            >
+                              <Edit className="h-4 w-4" />
+                            </Button>
+                          )}
+                          {onDeleteClick && (
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-8 w-8 text-destructive"
+                              onClick={() => onDeleteClick(transaction)}
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          )}
                         </div>
                       </div>
-                      <div className="flex gap-1">
-                        {onEditClick && (
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-8 w-8"
-                            onClick={() => onEditClick(transaction)}
-                          >
-                            <Edit className="h-4 w-4" />
-                          </Button>
-                        )}
-                        {onDeleteClick && (
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-8 w-8 text-destructive"
-                            onClick={() => onDeleteClick(transaction)}
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        )}
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
+                    </CardContent>
+                  </Card>
+                ))
+              )}
             </div>
           ) : (
             /* Desktop Table View */

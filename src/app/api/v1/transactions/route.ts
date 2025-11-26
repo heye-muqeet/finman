@@ -150,6 +150,7 @@ export const GET = withAuth(async (
       'date',
       'amount',
       'type',
+      'categoryId',
       'createdAt',
       'updatedAt',
     ];

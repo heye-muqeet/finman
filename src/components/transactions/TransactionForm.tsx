@@ -5,7 +5,7 @@
 
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef, useCallback } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import {
@@ -50,6 +50,7 @@ interface TransactionFormProps {
   onCancel?: () => void;
   mode?: 'create' | 'edit';
   className?: string;
+  showCard?: boolean; // Whether to show the Card wrapper (default: true)
 }
 
 // Common currencies
@@ -61,6 +62,7 @@ export default function TransactionForm({
   onCancel,
   mode = 'create',
   className,
+  showCard = true,
 }: TransactionFormProps) {
   const dispatch = useAppDispatch();
   const {
@@ -78,6 +80,7 @@ export default function TransactionForm({
   }));
 
   const [allTags, setAllTags] = useState<string[]>([]);
+  const isUpdatingRecurringPatternRef = useRef(false);
 
   const isEditMode = mode === 'edit' && !!initialData;
   const isLoading = isCreating || isUpdating;
@@ -88,6 +91,7 @@ export default function TransactionForm({
     control,
     watch,
     setValue,
+    getValues,
     formState: { errors, isDirty },
     reset,
   } = useForm<CreateTransactionInput>({
@@ -135,21 +139,56 @@ export default function TransactionForm({
       category.type === selectedType || category.type === 'both'
   );
 
-  // Save draft periodically
+  // Save draft on unmount (only if form is dirty)
   useEffect(() => {
-    if (isDirty) {
-      const subscription = watch((data) => {
-        dispatch(saveFormDraft(data as Partial<CreateTransactionInput>));
+    return () => {
+      // Check isDirty at unmount time, not at effect creation time
+      const currentValues = getValues();
+      const formIsDirty = Object.keys(currentValues).some((key) => {
+        const value = currentValues[key as keyof typeof currentValues];
+        return value !== undefined && value !== null && value !== '';
       });
-      return () => subscription.unsubscribe();
-    }
-  }, [isDirty, watch, dispatch]);
+      
+      if (formIsDirty) {
+        // Convert Date objects to ISO strings for Redux serialization
+        const serializableData = { ...currentValues } as any;
+        if (serializableData.date instanceof Date) {
+          serializableData.date = serializableData.date.toISOString();
+        }
+        if (serializableData.recurringPattern?.endDate instanceof Date) {
+          serializableData.recurringPattern.endDate = serializableData.recurringPattern.endDate.toISOString();
+        }
+        if (serializableData.recurringPattern?.nextOccurrence instanceof Date) {
+          serializableData.recurringPattern.nextOccurrence = serializableData.recurringPattern.nextOccurrence.toISOString();
+        }
+        dispatch(saveFormDraft(serializableData as Partial<CreateTransactionInput>));
+      }
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Only run on mount/unmount, not on every render
 
-  // Load draft on mount if available
+  // Load draft on mount if available (only once)
+  const draftLoadedRef = useRef(false);
   useEffect(() => {
-    if (formDraft && !initialData) {
+    if (formDraft && !initialData && !draftLoadedRef.current) {
+      draftLoadedRef.current = true;
       Object.entries(formDraft).forEach(([key, value]) => {
-        setValue(key as keyof CreateTransactionInput, value as any);
+        // Convert ISO strings back to Date objects
+        if (key === 'date' && typeof value === 'string') {
+          setValue(key as keyof CreateTransactionInput, new Date(value) as any, { shouldDirty: false });
+        } else if (key === 'recurringPattern' && value && typeof value === 'object') {
+          const pattern = value as any;
+          const convertedPattern = { ...pattern };
+          if (pattern.endDate && typeof pattern.endDate === 'string') {
+            convertedPattern.endDate = new Date(pattern.endDate);
+          }
+          if (pattern.nextOccurrence && typeof pattern.nextOccurrence === 'string') {
+            convertedPattern.nextOccurrence = new Date(pattern.nextOccurrence);
+          }
+          setValue(key as keyof CreateTransactionInput, convertedPattern as any, { shouldDirty: false });
+        } else {
+          setValue(key as keyof CreateTransactionInput, value as any, { shouldDirty: false });
+        }
       });
     }
   }, [formDraft, initialData, setValue]);
@@ -180,13 +219,8 @@ export default function TransactionForm({
 
   const selectedCategory = categoriesFromState.find((cat) => cat._id === selectedCategoryId);
 
-  return (
-    <Card className={className}>
-      <CardHeader>
-        <CardTitle>{isEditMode ? 'Edit Transaction' : 'Create Transaction'}</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+  const formContent = (
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
           {error && (
             <Alert variant="destructive">
               <AlertDescription>{error}</AlertDescription>
@@ -206,8 +240,13 @@ export default function TransactionForm({
                   value={field.value}
                   onValueChange={(value) => {
                     field.onChange(value);
-                    // Reset category when type changes
-                    setValue('categoryId', undefined as any);
+                    // Reset category when type changes (use setTimeout to avoid immediate re-render)
+                    const currentCategoryId = getValues('categoryId');
+                    if (currentCategoryId) {
+                      setTimeout(() => {
+                        setValue('categoryId', undefined as any, { shouldDirty: false });
+                      }, 0);
+                    }
                   }}
                   disabled={isLoading || isEditMode}
                 >
@@ -302,26 +341,32 @@ export default function TransactionForm({
                   onValueChange={field.onChange}
                   disabled={isLoading || filteredCategories.length === 0}
                 >
-                  <SelectTrigger id="categoryId">
+                  <SelectTrigger id="categoryId" className="w-full">
                     <SelectValue placeholder="Select category" />
                   </SelectTrigger>
                   <SelectContent>
-                    {filteredCategories.map((category) => (
-                      <SelectItem key={category._id} value={category._id}>
-                        <div className="flex items-center gap-2">
-                          {category.icon && (
-                            <span className="text-lg">{category.icon}</span>
-                          )}
-                          {category.color && (
-                            <div
-                              className="w-4 h-4 rounded-full"
-                              style={{ backgroundColor: category.color }}
-                            />
-                          )}
-                          <span>{category.name}</span>
-                        </div>
-                      </SelectItem>
-                    ))}
+                    {filteredCategories.length === 0 ? (
+                      <div className="px-2 py-1.5 text-sm text-muted-foreground">
+                        No categories available
+                      </div>
+                    ) : (
+                      filteredCategories.map((category) => (
+                        <SelectItem key={category._id} value={category._id}>
+                          <div className="flex items-center gap-2">
+                            {category.icon && (
+                              <span className="text-base">{category.icon}</span>
+                            )}
+                            {category.color && (
+                              <div
+                                className="w-3 h-3 rounded-full"
+                                style={{ backgroundColor: category.color }}
+                              />
+                            )}
+                            <span>{category.name}</span>
+                          </div>
+                        </SelectItem>
+                      ))
+                    )}
                   </SelectContent>
                 </Select>
               )}
@@ -517,12 +562,39 @@ export default function TransactionForm({
                   <Controller
                     name="recurringPattern.frequency"
                     control={control}
-                    render={({ field }) => (
-                      <Select
-                        value={field.value || ''}
-                        onValueChange={field.onChange}
-                        disabled={isLoading}
-                      >
+                    render={({ field }) => {
+                      const handleFrequencyChange = (value: string) => {
+                        // Prevent infinite loops
+                        if (isUpdatingRecurringPatternRef.current) return;
+                        if (field.value === value) return; // No change needed
+                        
+                        isUpdatingRecurringPatternRef.current = true;
+                        
+                        // Get current pattern and update only frequency
+                        const currentPattern = getValues('recurringPattern') || {};
+                        const newPattern = {
+                          ...currentPattern,
+                          frequency: value as 'daily' | 'weekly' | 'monthly' | 'yearly',
+                        };
+                        
+                        // Use setValue for the entire recurringPattern object
+                        setValue('recurringPattern', newPattern, { 
+                          shouldValidate: true,
+                          shouldDirty: true 
+                        });
+                        
+                        // Reset flag
+                        setTimeout(() => {
+                          isUpdatingRecurringPatternRef.current = false;
+                        }, 50);
+                      };
+                      
+                      return (
+                        <Select
+                          value={field.value || ''}
+                          onValueChange={handleFrequencyChange}
+                          disabled={isLoading}
+                        >
                         <SelectTrigger id="frequency">
                           <SelectValue placeholder="Select frequency" />
                         </SelectTrigger>
@@ -533,7 +605,8 @@ export default function TransactionForm({
                           <SelectItem value="yearly">Yearly</SelectItem>
                         </SelectContent>
                       </Select>
-                    )}
+                      );
+                    }}
                   />
                   {errors.recurringPattern?.frequency && (
                     <p className="text-sm text-destructive">
@@ -546,16 +619,48 @@ export default function TransactionForm({
                   <Controller
                     name="recurringPattern.endDate"
                     control={control}
-                    render={({ field }) => (
-                      <DatePicker
-                        value={field.value}
-                        onChange={(date) => field.onChange(date)}
-                        label="End Date (Optional)"
-                        showTime={false}
-                        showPresets={false}
-                        disabled={isLoading}
-                      />
-                    )}
+                    render={({ field }) => {
+                      const handleEndDateChange = (date: Date | undefined) => {
+                        // Prevent infinite loops
+                        if (isUpdatingRecurringPatternRef.current) return;
+                        if (field.value?.getTime() === date?.getTime()) return; // No change needed
+                        
+                        isUpdatingRecurringPatternRef.current = true;
+                        
+                        // Get current pattern and update only endDate
+                        const currentPattern = getValues('recurringPattern') || {};
+                        const newPattern: any = {
+                          ...currentPattern,
+                          endDate: date,
+                        };
+                        // Ensure frequency is included if it exists
+                        if (currentPattern && 'frequency' in currentPattern) {
+                          newPattern.frequency = currentPattern.frequency;
+                        }
+                        
+                        // Use setValue for the entire recurringPattern object
+                        setValue('recurringPattern', newPattern, { 
+                          shouldValidate: true,
+                          shouldDirty: true 
+                        });
+                        
+                        // Reset flag
+                        setTimeout(() => {
+                          isUpdatingRecurringPatternRef.current = false;
+                        }, 50);
+                      };
+                      
+                      return (
+                        <DatePicker
+                          value={field.value}
+                          onChange={handleEndDateChange}
+                          label="End Date (Optional)"
+                          showTime={false}
+                          showPresets={false}
+                          disabled={isLoading}
+                        />
+                      );
+                    }}
                   />
                 </div>
               </div>
@@ -567,7 +672,13 @@ export default function TransactionForm({
             <Label htmlFor="receiptId">Receipt ID (Optional)</Label>
             <Input
               id="receiptId"
-              {...register('receiptId')}
+              {...register('receiptId', {
+                setValueAs: (value) => value === '' ? undefined : value,
+                validate: (value) => {
+                  if (!value || value === '') return true; // Allow empty
+                  return /^[0-9a-fA-F]{24}$/.test(value) || 'Receipt ID must be a valid MongoDB ObjectId';
+                },
+              })}
               disabled={isLoading}
               placeholder="Receipt ID"
             />
@@ -603,9 +714,22 @@ export default function TransactionForm({
               )}
             </Button>
           </div>
-        </form>
-      </CardContent>
-    </Card>
+    </form>
   );
+
+  if (showCard) {
+    return (
+      <Card className={className}>
+        <CardHeader>
+          <CardTitle>{isEditMode ? 'Edit Transaction' : 'Create Transaction'}</CardTitle>
+        </CardHeader>
+        <CardContent>
+          {formContent}
+        </CardContent>
+      </Card>
+    );
+  }
+
+  return <div className={className}>{formContent}</div>;
 }
 
